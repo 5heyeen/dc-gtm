@@ -72,6 +72,7 @@ When any of the following files are modified, **always sync the changes back to 
 | Local File | Notion Target |
 |------------|---------------|
 | `projects/dc-gtm/customer-personas/dc-customer-personas.md` | [DC Customer Personas & Value Props](https://www.notion.so/32d64f448283806d8b8cf32572c4be43) |
+| `projects/dc-gtm/dc-services/dc_services_all.md` | [DC Services](https://www.notion.so/964d4138914342c3a0ba78de77f5a030) |
 
 To sync: after editing the local file, use the Notion MCP tools (`mcp__*__notion-update-page` or `mcp__*__notion-create-pages`) to push the updated content to the corresponding Notion page/database.
 
