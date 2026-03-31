@@ -8,7 +8,7 @@ Research, strategy, and tooling for building a joint Metier + Norconsult data ce
 
 ```
 dc-gtm/
-├── CLAUDE.md                          # Master agent instructions (meeting-prep agent)
+├── CLAUDE.md                          # Master agent instructions (DC operator research agent)
 ├── README.md                          # This file
 ├── synthesis.md                       # Cross-stream research synthesis
 │
@@ -70,7 +70,7 @@ Breakdowns and instructions for specialized agents that operate within this repo
 
 | File | Agent | Purpose |
 |------|-------|---------|
-| `research-operator-agent.md` | Research Operator Agent | 6-phase research agent that investigates DC operators (company profile, hiring, news, ownership, funding & investors, competitive landscape) and produces meeting briefs. Uses reusable skills and `CLAUDE.md` as its instruction set. |
+| `dc-operator-research-agent.md` | DC Operator Research Agent | 6-phase research agent that investigates DC operators (company profile, hiring, news, ownership, funding & investors, competitive landscape) and produces meeting briefs. Uses `CLAUDE.md` as its instruction set. |
 
 ### `specs/` — Project Specifications
 
@@ -115,7 +115,7 @@ Tasks 01, 02, 04, 05, 06, 08 have prompt chains designed in the Phase 1-4 Socrat
 
 ### `projects/operators/` — Per-Operator Intelligence
 
-One folder per target DC operator. Used by the meeting-prep agent and for ongoing operator tracking.
+One folder per target DC operator. Used by the DC operator research agent and for ongoing operator tracking.
 
 ```
 projects/operators/<operator-name>/
@@ -157,13 +157,13 @@ Documents describing Metier's capabilities, services, and positioning for the DC
 
 ### `templates/` — Templates
 
-Reusable templates for research outputs and meeting preparation.
+Reusable templates for research outputs and operator investigation.
 
 | File/Folder | Purpose |
 |-------------|---------|
 | `operator-profile.md` | Template for operator input (seed data before research) |
 | `meeting-brief.md` | Template for the final meeting brief output |
-| `prompts/01-06` | 6 research phase instruction templates for the meeting-prep agent |
+| `prompts/01-06` | 6 research phase instruction templates for the DC operator research agent |
 
 ### `scripts/` — Utility Scripts
 
@@ -177,7 +177,7 @@ Reusable templates for research outputs and meeting preparation.
 
 | File | Purpose |
 |------|---------|
-| `CLAUDE.md` | Master agent instructions — tells Claude how to operate when run inside this repo (meeting-prep agent workflow) |
+| `CLAUDE.md` | Master agent instructions — tells Claude how to operate when run inside this repo (DC operator research agent workflow) |
 | `synthesis.md` | Cross-stream research synthesis — the unified answer to "what should Metier + Norconsult's DC GTM plan be?" |
 | `00-scope.md` | Research scope definition |
 | `00-scope-prompt-chain.md` | Top-level Socratic prompt chain for the entire GTM research |
@@ -187,7 +187,7 @@ Reusable templates for research outputs and meeting preparation.
 
 ## How to Use This Repo
 
-### Run the meeting-prep agent for an operator
+### Run the DC operator research agent for an operator
 ```bash
 cd projects/operators/fossefall
 claude

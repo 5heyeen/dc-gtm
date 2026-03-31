@@ -2,7 +2,7 @@
 
 **Prepared:** {DATE}
 **Meeting with:** {CONTACT_NAME_TITLE}
-**Prepared by:** Claude Meeting Prep Agent
+**Prepared by:** DC Operator Research Agent
 
 ---
 

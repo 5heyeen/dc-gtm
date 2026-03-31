@@ -1,4 +1,4 @@
-# Breakdown: research-operator-agent
+# Breakdown: DC Operator Research Agent
 
 **Date:** 2026-03-31
 

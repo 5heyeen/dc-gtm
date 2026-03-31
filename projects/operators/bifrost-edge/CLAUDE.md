@@ -1,6 +1,6 @@
-# Bifrost Edge — Meeting Prep
+# Bifrost Edge — DC Operator Research
 
-This folder contains research and meeting preparation for Bifrost Edge.
+This folder contains research and operator intelligence for Bifrost Edge.
 
 ## Setup
 

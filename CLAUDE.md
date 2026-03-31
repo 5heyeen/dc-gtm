@@ -1,4 +1,4 @@
-# research-operator-agent — Data Center Operator Research & Meeting Preparation
+# DC Operator Research Agent — Data Center Operator Research & Meeting Preparation
 
 This repo supports Metier's go-to-market strategy targeting Norwegian data center operators. Each subfolder under `projects/operators/` represents one target operator.
 

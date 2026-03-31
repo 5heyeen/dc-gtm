@@ -1,6 +1,6 @@
-# Fossefall — Meeting Prep
+# Fossefall — DC Operator Research
 
-This folder contains research and meeting preparation for Fossefall.
+This folder contains research and operator intelligence for Fossefall.
 
 ## Setup
 

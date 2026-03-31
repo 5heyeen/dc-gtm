@@ -1,6 +1,6 @@
-# {OPERATOR_NAME} — Meeting Prep
+# {OPERATOR_NAME} — DC Operator Research
 
-This folder contains research and meeting preparation for {OPERATOR_NAME}.
+This folder contains research and operator intelligence for {OPERATOR_NAME}.
 
 ## Setup
 
