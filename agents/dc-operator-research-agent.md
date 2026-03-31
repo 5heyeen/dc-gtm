@@ -24,3 +24,52 @@ Build a Claude Code agent (CLAUDE.md-based) that researches data center operator
 8. **Create placeholder operator configs** — Set up stub folders for Skygard (high-security, Hafslund/Telenor/HitecVision), Kitebrook, and Bifrost Edge with minimal known context. Done when each has a folder with a skeleton `operator.md`.
 
 9. **Test and iterate the agent on Fossefall** — Run the agent end-to-end for Fossefall, review the output brief, and refine the CLAUDE.md prompts and templates based on what works and what doesn't. Done when the Fossefall brief is useful enough to bring to a real meeting.
+
+---
+
+## Skill Mapping
+
+The DC operator research agent uses the following reusable skills from `skills/`. Each phase maps to one or more skills.
+
+### Phase-to-Skill Map
+
+| Agent Phase | Skill Used | How It's Used |
+|---|---|---|
+| **Pre-research setup** | `/decompose-task` | Break an operator investigation into subtasks if scope is unclear or the operator is complex (e.g., consortium with multiple entities to research separately) |
+| **Pre-research setup** | `/create-prompts` | Generate Socratic prompt chains for custom research angles not covered by the standard 6-phase templates (e.g., a specific investor's portfolio strategy) |
+| **Phase 1: Company Research** | `/run-prompt-chain` | Execute the Phase 1 prompt template — run searches, synthesize company overview |
+| **Phase 2: Job Ads & Hiring** | `/run-prompt-chain` | Execute the Phase 2 prompt template — search finn.no, LinkedIn, analyze hiring patterns |
+| **Phase 3: News, Ownership & Funding** | `/run-prompt-chain` | Execute the Phase 3 prompt template — ownership deep-dive, funding research, investor requirements |
+| **Phase 4: Competitive Landscape** | `/run-prompt-chain` | Execute the Phase 4 prompt template — find comparable operators, lessons learned |
+| **Phase 5: Pain Point Mapping** | `/synthesise-research` | Synthesize findings from Phases 1-4 against `metier/pain-point-mapping.md` — no web research, pure synthesis |
+| **Phase 6: Meeting Brief** | `/executive-brief` | Structure the final brief in a scannable, consulting-grade format (What/Why/How) |
+| **Phase 6: Meeting Brief** | `/synthesise-research` | Merge all research phases into the meeting brief template |
+| **Post-research** | `/save-research` | Persist each phase output to local files and optionally sync to Notion Document Library |
+| **Post-research** | `/select-diagram` | Visualize key findings (e.g., ownership structure, competitive positioning map, pain-point-to-service matrix) |
+
+### Skills NOT Used by This Agent
+
+| Skill | Why Not |
+|---|---|
+| `/researcher-agent` | This agent *is* the specialized version — it replaces the generic researcher with a domain-specific 6-phase workflow |
+| `/write-specs` | Specs are for building new artifacts, not for running operator research |
+
+### Skill Invocation Pattern
+
+```
+Operator folder setup
+  └─ (optional) /decompose-task — if operator is complex
+  └─ (optional) /create-prompts — if custom research angles needed
+
+Phase 1-4: Web research phases
+  └─ /run-prompt-chain — for each phase template
+  └─ /save-research — after each phase completes
+
+Phase 5-6: Synthesis phases
+  └─ /synthesise-research — merge Phases 1-4 into pain points
+  └─ /executive-brief — format the final meeting brief
+  └─ /save-research — persist final outputs
+
+Post-research (optional)
+  └─ /select-diagram — visualize ownership, competitive landscape, or pain-point matrix
+```
