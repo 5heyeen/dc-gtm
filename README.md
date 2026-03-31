@@ -19,16 +19,14 @@ dc-gtm/
 │
 ├── projects/                          # Project-level folders
 │   ├── dc-gtm/                        # The overall DC GTM initiative
+│   │   ├── investors/                 # Investor research and analysis
+│   │   └── tech-trends/              # Technology trends reshaping DC design & construction
 │   └── operators/                     # Per-operator intelligence folders
 │       ├── _template/                 # Template for new operators
 │       ├── fossefall/                 # Fossefall (500 MW AI DC startup)
 │       ├── skygard/                   # Skygard (Telenor/Hafslund/HitecVision JV)
 │       ├── kitebrook/                 # Kitebrook
 │       └── bifrost-edge/             # Bifrost Edge
-│
-├── research/                          # All research outputs
-│   ├── investors/                     # Investor research and analysis
-│   └── tech-trends/                   # Technology trends reshaping DC design & construction
 │
 ├── tasks/                             # Research workspace (Phase 5 prompt chains + outputs)
 │   ├── 01-operator-lifecycle/         # DC operator & project lifecycle phases
@@ -136,11 +134,11 @@ projects/operators/<operator-name>/
 
 **To add a new operator:** Run `./scripts/new-operator.sh <operator-name>`, then edit `operator.md` with what you know.
 
-### `research/investors/` — Investor Research
+### `projects/dc-gtm/investors/` — Investor Research
 
 Research and analysis of investors in the Norwegian data center market. Includes investor checklists, execution capability assessments, and value propositions.
 
-### `research/tech-trends/` — Technology Trends
+### `projects/dc-gtm/tech-trends/` — Technology Trends
 
 Technology trends reshaping data center design and construction. Includes trend analysis, capability gap assessment, and timing matrix.
 
