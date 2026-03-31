@@ -1,6 +1,6 @@
-# Skygard — Meeting Prep
+# Skygard — DC Operator Research
 
-This folder contains research and meeting preparation for Skygard.
+This folder contains research and operator intelligence for Skygard.
 
 ## Setup
 

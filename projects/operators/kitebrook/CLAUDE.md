@@ -1,6 +1,6 @@
-# Kitebrook — Meeting Prep
+# Kitebrook — DC Operator Research
 
-This folder contains research and meeting preparation for Kitebrook.
+This folder contains research and operator intelligence for Kitebrook.
 
 ## Setup
 
