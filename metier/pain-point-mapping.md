@@ -94,6 +94,25 @@ This file provides a decision framework for mapping observed operator pain point
 
 ---
 
+---
+
+### Funding-Driven Pain Points
+
+These pain points arise specifically from investor requirements and capital structure constraints. They cut across all archetypes but are strongest for PE-backed and infrastructure-fund-backed operators.
+
+| Funding Signal | Pain Point | Primary Metier Service | Why |
+|---|---|---|---|
+| PE exit horizon (3-7 yrs) | Timeline pressure — must reach revenue/commissioning fast to hit exit window | Project Execution & PM | Professional PM accelerates delivery, reduces delay risk that erodes IRR |
+| Milestone-gated capital | Risk of capital freeze if milestones slip — project controls essential | Portfolio Governance | Structured milestone tracking and reporting unlocks next funding tranche |
+| Institutional investor ESG mandates | Must demonstrate EU Taxonomy alignment, PUE targets, renewable sourcing | Strategy Advisory | ESG strategy and compliance framework for investor reporting |
+| High reporting burden (quarterly+) | Operators lack capacity to produce investor-grade project reports | Portfolio Governance | Standardized dashboards, cost/schedule reporting, variance analysis |
+| Board governance provisions | Investors hold board seats, require CAPEX approval above thresholds | Owner's Engineer | Independent technical advisory provides the third-party validation boards need for CAPEX decisions |
+| First-time capital raise for expansion | Operator needs to demonstrate execution credibility to attract investors | Project Execution & PM | Track record of professional PM de-risks the investment in investors' eyes |
+| Debt covenants / DSCR requirements | Must maintain financial ratios — cost overruns directly threaten covenants | Contract & Procurement | Tight procurement and cost control prevents covenant breaches |
+| Multiple investor classes (equity + debt) | Complex stakeholder reporting across different capital providers | Portfolio Governance | Unified reporting framework serving equity investors, lenders, and board |
+
+---
+
 ## Signal-to-Service Quick Reference
 
 | Observed Signal | Primary Service | Secondary Service |
@@ -111,6 +130,12 @@ This file provides a decision framework for mapping observed operator pain point
 | International contractors | Owner's Engineer | Contract & Procurement |
 | Unclear market positioning | Strategy Advisory | Early-Phase Advisory |
 | Schedule or cost overrun history | Project Execution & PM | Portfolio Governance |
+| Milestone-gated investor capital | Portfolio Governance | Project Execution & PM |
+| PE exit within 3-5 years | Project Execution & PM | Owner's Engineer |
+| ESG/EU Taxonomy investor mandates | Strategy Advisory | Portfolio Governance |
+| Raising capital / seeking new investors | Project Execution & PM | Portfolio Governance |
+| Multiple capital providers (equity + debt) | Portfolio Governance | Contract & Procurement |
+| Debt covenants / DSCR constraints | Contract & Procurement | Portfolio Governance |
 
 ---
 

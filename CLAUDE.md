@@ -1,10 +1,10 @@
-# prep-meeting-agent — Data Center Meeting Preparation
+# research-operator-agent — Data Center Operator Research & Meeting Preparation
 
 This repo supports Metier's go-to-market strategy targeting Norwegian data center operators. Each subfolder under `projects/operators/` represents one target operator.
 
 ## Purpose
 
-When run inside an operator folder (`projects/operators/<name>/`), this agent researches the operator from public sources and produces a structured meeting brief that maps their pain points to Metier's services.
+When run inside an operator folder (`projects/operators/<name>/`), this agent researches the operator from public sources — including their **funding situation, investors, and investor-driven constraints** — and produces a structured meeting brief that maps their pain points to Metier's services.
 
 ## Available Tools
 
@@ -12,16 +12,18 @@ This agent uses **WebSearch** and **WebFetch** for research. All research is don
 - Company websites
 - finn.no (job ads)
 - LinkedIn (via search snippets — do not attempt to fetch LinkedIn pages directly)
-- proff.no / brreg.no (Norwegian company registry)
+- proff.no / brreg.no (Norwegian company registry and shareholder data)
 - News sites (DCD, Computer Weekly, BeBeez, etc.)
 - Industry reports
+- Investor/PE firm websites and portfolio pages
+- Project finance and funding news
 
 ## Key Reference Files
 
 - `metier/services.md` — Metier's service catalog with DC-specific framing (8 services)
-- `metier/pain-point-mapping.md` — Decision framework mapping pain points to services, including 4 operator archetype patterns
+- `metier/pain-point-mapping.md` — Decision framework mapping pain points to services, including 4 operator archetype patterns and funding-driven pain points
 - `templates/prompts/01-06` — Detailed instructions for each research phase
-- `templates/meeting-brief.md` — Output template for the final brief
+- `templates/meeting-brief.md` — Output template for the final brief (includes Funding & Investor Context section)
 
 ## Workflow
 
@@ -33,17 +35,17 @@ Read `templates/prompts/01-company-research.md` and execute. Saves to `research/
 ### Phase 2: Job Ads & Hiring Analysis
 Read `templates/prompts/02-job-ads-analysis.md` and execute. Saves to `research/02-hiring.md`.
 
-### Phase 3: News & Ownership Analysis
-Read `templates/prompts/03-news-and-ownership.md` and execute. Saves to `research/03-news-ownership.md`.
+### Phase 3: News, Ownership & Funding Analysis
+Read `templates/prompts/03-news-and-ownership.md` and execute. This is a critical phase — it covers ownership structure, **investor identity, funding rounds, capital structure, investor requirements and constraints** (IRR targets, exit horizons, milestone gates, ESG mandates, reporting burden, governance provisions). Saves to `research/03-news-ownership.md`.
 
 ### Phase 4: Competitive Landscape
 Read `templates/prompts/04-competitive-landscape.md` and execute. Saves to `research/04-comparables.md`.
 
 ### Phase 5: Pain Point Mapping (no web research — synthesis only)
-Read `templates/prompts/05-pain-point-mapping.md` and execute. Also read `metier/services.md` and `metier/pain-point-mapping.md`. Saves to `research/05-pain-points.md`.
+Read `templates/prompts/05-pain-point-mapping.md` and execute. Also read `metier/services.md` and `metier/pain-point-mapping.md`. **Pay special attention to the "Funding-Driven Pain Points" section** in the pain-point mapping — investor pressure, milestone-gated capital, ESG mandates, and reporting burden are often the most urgent pain points for PE-backed and fund-backed operators. Saves to `research/05-pain-points.md`.
 
 ### Phase 6: Meeting Brief Generation (no web research — synthesis only)
-Read `templates/prompts/06-brief-generation.md` and execute. Saves to `research/brief.md`.
+Read `templates/prompts/06-brief-generation.md` and execute. **Ensure the "Funding & Investor Context" section (Section 3) is fully populated** — this is often the most actionable section for Metier's pitch. Saves to `research/brief.md`.
 
 ## Commands
 
@@ -56,7 +58,7 @@ When the user says:
 
 - **Research** in both Norwegian and English. Many sources are in Norwegian.
 - **Output** briefs in English.
-- Key Norwegian search terms: "datasenter" (data center), "stilling" (job posting), "prosjektleder" (project manager), "innkjøp" (procurement), "byggeprosjekt" (construction project), "eiendom" (real estate), "styret" (board), "daglig leder" (CEO), "ansatte" (employees), "konsesjon" (concession), "regulering" (zoning), "sikkerhetsklarering" (security clearance).
+- Key Norwegian search terms: "datasenter" (data center), "stilling" (job posting), "prosjektleder" (project manager), "innkjøp" (procurement), "byggeprosjekt" (construction project), "eiendom" (real estate), "styret" (board), "daglig leder" (CEO), "ansatte" (employees), "konsesjon" (concession), "regulering" (zoning), "sikkerhetsklarering" (security clearance), "investering" (investment), "finansiering" (financing), "aksjonærer" (shareholders), "eiere" (owners), "kapital" (capital), "emisjon" (share issue/capital raise), "egenkapital" (equity), "lån" (loan/debt).
 
 ## Quality Standards
 

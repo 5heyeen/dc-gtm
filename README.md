@@ -70,7 +70,7 @@ Breakdowns and instructions for specialized agents that operate within this repo
 
 | File | Agent | Purpose |
 |------|-------|---------|
-| `meeting-prep-agent-breakdown.md` | Meeting Prep Agent | 6-phase research agent that produces meeting briefs for DC operator meetings. Uses `CLAUDE.md` as its instruction set. |
+| `research-operator-agent.md` | Research Operator Agent | 6-phase research agent that investigates DC operators (company profile, hiring, news, ownership, funding & investors, competitive landscape) and produces meeting briefs. Uses reusable skills and `CLAUDE.md` as its instruction set. |
 
 ### `specs/` — Project Specifications
 

@@ -15,9 +15,32 @@ Copy this file to `projects/operators/<operator-name>/operator.md` and fill in t
 
 ## Ownership & Funding
 
-- **Ownership type:** `[PE-backed | publicly-traded | state-owned | private | utility-subsidiary | consortium]`
+- **Ownership type:** `[PE-backed | publicly-traded | state-owned | private | utility-subsidiary | consortium | sovereign-wealth-backed | infrastructure-fund-backed]`
 - **Owner entities:**
 - **Known funding / investment rounds:**
+
+### Investor Details
+
+| Investor | Fund type | Investment amount | Date | Notes |
+|----------|-----------|-------------------|------|-------|
+|          | `[PE | infra-fund | sovereign-wealth | family-office | corporate | utility | government | mixed]` |  |  |  |
+
+### Capital & Deployment
+
+- **Total known funding:**
+- **Funding stage:** `[seed | series-A | series-B | growth | project-finance | self-funded | unknown]`
+- **Capital deployment timeline:** *(e.g., milestone-gated, phased drawdown, fully committed)*
+- **Remaining capital need:** *(estimated gap between committed and required CAPEX)*
+
+### Investor Requirements & Constraints
+
+- **IRR / return targets:** *(if PE/infra fund — typical range for fund type)*
+- **Exit horizon:** *(PE: 3-7 yrs, infra fund: 10-15+ yrs, sovereign: indefinite)*
+- **Milestone gates:** *(capital release tied to construction/commercial milestones?)*
+- **Reporting requirements:** *(quarterly financials, construction progress, KPI dashboards?)*
+- **ESG / sustainability mandates:** *(EU Taxonomy compliance, PUE targets, renewable energy requirements from investors?)*
+- **Governance provisions:** *(board seats, approval thresholds, key person provisions, change-of-control restrictions?)*
+- **Debt constraints:** *(restrictions on additional leverage, debt covenants?)*
 
 ## Market Position
 
