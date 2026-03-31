@@ -48,22 +48,9 @@ Store the matched project page URL for later use by `/save-research`.
 
 ---
 
-## Stage 2 — Scope Prompt Chain
+## Stage 2 — Breakdown
 
-Generate a high-level Socratic prompt chain for the overall research scope.
-
-1. Invoke `/create-prompts` with the scope text as the argument
-2. When `/create-prompts` asks where to save in Notion, tell it to skip Notion save (the orchestrator handles Notion later)
-3. When `/create-prompts` asks where to save locally, direct it to save to `~/.claude/research/<scope-slug>.md`
-4. Copy/move the output to `workspace\00-scope-prompt-chain.md`
-
-This chain anchors the entire research effort. It is not executed directly — it informs the breakdown and provides the research frame.
-
----
-
-## Stage 3 — Breakdown
-
-Break the research scope into structured subtasks.
+Break the research scope into structured subtasks. This happens **before** any prompt chains are generated — the breakdown defines the research structure, and prompt chains are created per subtask in Stage 3.
 
 1. Tell the user: "I'm now breaking down the research scope into subtasks. When `/decompose-task` asks where to save the markdown file, use: `<workspace-path>`"
 2. Invoke `/decompose-task` with the scope text as the argument
@@ -89,29 +76,24 @@ If the user wants changes, work with them to adjust the list, then re-confirm. O
 
 ---
 
-## Stage 4 — Per-Subtask Prompt Chains
+## Stage 3 — Per-Subtask Research (Prompt Chain → Execute → Save)
 
-For each approved subtask, generate a Socratic prompt chain.
+For each approved subtask, generate a prompt chain and immediately execute it before moving to the next subtask. This keeps each subtask self-contained: plan it, research it, save it.
 
 1. Create `workspace\tasks\` directory
-2. For each subtask:
+2. For each subtask, run the following sequence:
+
+### 3a. Generate Prompt Chain
+
    - Derive `<task-slug>` from the subtask title (kebab-case, max 6 words)
    - Create `workspace\tasks\<nn>-<task-slug>\` directory (nn = 01, 02, ...)
    - Invoke `/create-prompts` with the subtask description as argument
    - Direct local save to the task directory
    - Copy/move the output to `workspace\tasks\<nn>-<task-slug>\prompt-chain.md`
 
-Process subtasks sequentially — each `/create-prompts` invocation runs its own clarification flow.
+### 3b. Execute Prompt Chain
 
----
-
-## Stage 5 — Research Execution
-
-Execute all prompt chains through deep research.
-
-For each task's `prompt-chain.md`:
-
-1. Invoke `/run-prompt-chain` with the prompt chain file path as argument
+   - Invoke `/run-prompt-chain` with the prompt chain file path as argument
    - `/run-prompt-chain` handles:
      - Classifying prompts as `[independent]` or `[sequential]`
      - Running independent prompts in parallel via sub-agents
@@ -119,7 +101,8 @@ For each task's `prompt-chain.md`:
      - Saving individual prompt outputs to `workspace\tasks\<nn>-<task-slug>\prompts\<nn>-<prompt-slug>.md`
      - Merging all outputs into `workspace\tasks\<nn>-<task-slug>\research.md`
 
-2. After each task's research completes, save each individual prompt output to Notion:
+### 3c. Save Prompt Outputs to Notion
+
    - For each file in `workspace\tasks\<nn>-<task-slug>\prompts\*.md`:
      - Read the file to extract the prompt text and answer content
      - Invoke `/save-research` with:
@@ -130,19 +113,21 @@ For each task's `prompt-chain.md`:
        - `local_filename`: (already saved by /run-prompt-chain — skip local save)
        - `project_page_url`: the matched project page URL from Stage 1
 
+3. Process subtasks sequentially — each subtask's prompt chain is generated and executed before starting the next.
+
 ---
 
-## Stage 6 — Save Top-Level Research
+## Stage 4 — Save Top-Level Research
 
 Save the consolidated research to both local workspace and Notion.
 
 The task-level `research.md` files and individual prompt outputs are already saved. This stage saves the top-level research entry that ties everything together.
 
-This will be done after synthesis and presentation are complete (in Stage 8).
+This will be done after synthesis and presentation are complete (in Stage 6).
 
 ---
 
-## Stage 7 — Synthesis
+## Stage 5 — Synthesis
 
 Synthesise all research into a unified answer to the original scope.
 
@@ -152,21 +137,21 @@ Synthesise all research into a unified answer to the original scope.
 
 ---
 
-## Stage 8 — Presentation
+## Stage 6 — Presentation
 
 Generate the final visual presentation.
 
-### 8a. Diagram Generation
+### 6a. Diagram Generation
 1. Create `workspace\diagrams\` directory
 2. Invoke `/select-diagram` with `workspace\synthesis.md` as argument
    - It generates Mermaid diagrams (returned inline) AND interactive HTML files (saved to `workspace\diagrams\`)
 3. Capture the returned Mermaid diagram(s) for the presentation.md
 
-### 8b. Executive Brief
+### 6b. Executive Brief
 1. Invoke `/executive-brief` with `workspace\synthesis.md` as argument
 2. Capture the returned structured brief (What/Why/How/When/Who/Implications/Sources)
 
-### 8c. Assemble Presentation
+### 6c. Assemble Presentation
 Combine the diagram(s) and brief into `workspace\presentation.md`:
 
 ```markdown
@@ -187,7 +172,7 @@ Combine the diagram(s) and brief into `workspace\presentation.md`:
 
 Save to `workspace\presentation.md`.
 
-### 8d. Save to Notion
+### 6d. Save to Notion
 Invoke `/save-research` with:
 - `title`: `[Research] <Scope Title>`
 - `content`: the full content of `presentation.md`
@@ -197,7 +182,7 @@ Invoke `/save-research` with:
 
 ---
 
-## Stage 9 — Final Report
+## Stage 7 — Final Report
 
 Tell the user:
 
@@ -207,7 +192,6 @@ Research complete.
 Workspace: <full workspace path>
 Files:
   - 00-scope.md (scope)
-  - 00-scope-prompt-chain.md (Socratic frame)
   - 01-breakdown.md (subtask breakdown)
   - tasks/*/ (per-task prompt chains, prompts, and research)
   - synthesis.md (cross-task synthesis)

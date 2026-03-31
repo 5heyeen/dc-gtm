@@ -34,7 +34,6 @@ A complete research package saved in two locations:
 **Local workspace:** `C:\Users\shelie\.claude\projects\<project-slug>\research\<scope-slug>\`
 ```
 00-scope.md                        # confirmed research scope
-00-scope-prompt-chain.md           # Socratic chain for the overall scope
 01-breakdown.md                    # task breakdown from /breakdown
 tasks/
   01-<task-slug>/
@@ -115,8 +114,9 @@ All other schema fields (project-specific): left blank — user can fill as need
 
 ### Acceptance Criteria
 - **Given** I run `/researcher-agent "impact of AI on management consulting"`, **When** the agent completes, **Then** I receive a full workspace at `C:\Users\shelie\.claude\projects\<matched-project-slug>\research\impact-of-ai-on-management-consulting\` and a Document Library entry in the matched project with full research content
-- **Given** the agent reaches Step 2 (breakdown), **When** the breakdown is complete, **Then** the agent pauses and shows me the subtasks — it does not proceed to Step 3 until I approve
-- **Given** the Socratic prompt chain for a task contains independent prompts, **When** Step 4 runs, **Then** those prompts are executed in parallel sub-agents; sequential prompts within a chain run one at a time with cumulative context
+- **Given** the agent reaches Stage 2 (breakdown), **When** the breakdown is complete, **Then** the agent pauses and shows me the subtasks — it does not proceed to Stage 3 until I approve
+- **Given** a subtask's prompt chain contains independent prompts, **When** Stage 3b runs for that subtask, **Then** those prompts are executed in parallel sub-agents; sequential prompts within a chain run one at a time with cumulative context
+- **Given** the agent is processing subtask N, **When** Stage 3a-3c complete, **Then** subtask N is fully researched and saved before subtask N+1 begins
 - **Given** a step fails mid-run, **When** the failure occurs, **Then** the agent stops, reports the failure clearly, and saves all completed outputs before halting
 - **Given** I run the agent with a Notion URL as input, **When** the agent starts, **Then** it fetches the page content and uses it as the research scope
 - **Given** the final presentation is generated, **When** I view it, **Then** it contains at least one Mermaid diagram selected by `/select-diagram`, and the full explanation is structured by `/executive-brief` in executive readable style
@@ -127,7 +127,7 @@ All other schema fields (project-specific): left blank — user can fill as need
 
 ### Architecture & Approach
 
-`/researcher-agent` is an orchestrating skill that sequences 8 stages:
+`/researcher-agent` is an orchestrating skill that sequences 7 stages. The key design principle is **breakdown first, then prompt-chain-per-subtask** — the research scope is decomposed before any prompt chains are generated, and each subtask is fully researched (chain → execute → save) before moving to the next.
 
 ```
 Stage 1: Scope Resolution & Interview
@@ -141,32 +141,26 @@ Stage 1: Scope Resolution & Interview
   → Create workspace: C:\Users\shelie\.claude\projects\<project-slug>\research\<scope-slug>\
   → Save confirmed scope to workspace\00-scope.md
 
-Stage 2: Scope Prompt Chain (via /socrates-prompt-chain)
-  → Invoke Skill("socrates-prompt-chain", scope)
-  → Generates a high-level Socratic frame for the overall research scope
-  → Save output to workspace\00-scope-prompt-chain.md
-  → (This chain anchors the entire research effort and informs the breakdown)
-
-Stage 3: Breakdown (via /breakdown skill)
-  → Tell user: "When /breakdown asks where to save, use: <workspace-path>"
-  → Invoke Skill("breakdown", scope)
-  → /breakdown runs its own interactive interview; user saves to workspace\
+Stage 2: Breakdown (via /decompose-task skill)
+  → Tell user: "When /decompose-task asks where to save, use: <workspace-path>"
+  → Invoke Skill("decompose-task", scope)
+  → /decompose-task runs its own interactive interview; user saves to workspace\
   → Rename/move output to 01-breakdown.md in workspace
   → *** CHECKPOINT: show subtasks, ask user to approve before continuing ***
 
-Stage 4: Prompt Chain Generation (per subtask, via /socrates-prompt-chain)
-  → For each approved subtask:
-      → Invoke Skill("socrates-prompt-chain", subtask-description)
+Stage 3: Per-Subtask Research (prompt chain → execute → save, per subtask)
+  → For each approved subtask, run the full sequence before starting the next:
+    3a. Generate Prompt Chain (via /create-prompts)
+      → Invoke Skill("create-prompts", subtask-description)
       → Move/copy output to workspace\tasks\<task-slug>\prompt-chain.md
-  → (Sequential across tasks; /socrates-prompt-chain runs its own flow per task)
-
-Stage 5: Research Execution (via /run-prompt-chain — new skill)
-  → For each task's prompt chain:
+    3b. Execute Prompt Chain (via /run-prompt-chain)
       → /run-prompt-chain reads chain, classifies each prompt: [independent] | [sequential]
       → Independent prompts → spawn parallel sub-agents, each does deep research (knowledge + WebSearch)
       → Sequential chains → run in order within one agent, each answer builds on prior context
-      → For each prompt executed:
-          → Save output to workspace\tasks\<task-slug>\prompts\<nn>-<prompt-slug>.md
+      → Save output to workspace\tasks\<task-slug>\prompts\<nn>-<prompt-slug>.md
+      → Merge all prompt outputs into workspace\tasks\<task-slug>\research.md
+    3c. Save Prompt Outputs to Notion
+      → For each prompt output:
           → Create a Document Library entry in matched Notion project:
               Name: "[Prompt] <prompt-slug> — <task-slug>"
               Source: "Claude"
@@ -174,9 +168,9 @@ Stage 5: Research Execution (via /run-prompt-chain — new skill)
                 > 📎 [callout] Prompt: "<the exact prompt text>"
                 ---
                 <full research answer>
-      → Merge all prompt outputs into workspace\tasks\<task-slug>\research.md
+  → (Sequential across subtasks; each subtask is fully researched before the next begins)
 
-Stage 6: Save (via /save-research — new skill)
+Stage 4: Save Top-Level Research (via /save-research — new skill)
   → All layers already saved locally at each step above
   → Create Document Library entry in matched project:
       → Fetch project page → navigate to "3. Data & Research" → find Document Library database
@@ -184,16 +178,19 @@ Stage 6: Save (via /save-research — new skill)
       → Page body = full research content: breakdown summary, per-task research, synthesis, presentation
         (all in one page, separated by ## sections)
 
-Stage 7: Synthesis (via /synthesise-research — new skill)
+Stage 5: Synthesis (via /synthesise-research — new skill)
   → Read workspace\00-scope.md + all workspace\tasks\*\research.md
   → Synthesise into unified answer to original research question
   → Save to workspace\synthesis.md
 
-Stage 8: Presentation (via /select-diagram + /executive-brief — new skills)
+Stage 6: Presentation (via /select-diagram + /executive-brief — new skills)
   → /select-diagram reads synthesis.md, selects optimal Mermaid diagram type, generates diagram(s)
   → /executive-brief structures the what/why/how/when/who into executive-readable format
   → Combine into workspace\presentation.md
   → Update Notion Document Library page body with final presentation content
+
+Stage 7: Final Report
+  → Display workspace summary and Notion entry counts to user
 ```
 
 ### New Skills to Create
