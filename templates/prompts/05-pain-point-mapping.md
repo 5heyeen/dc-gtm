@@ -8,8 +8,8 @@ Synthesize all research into a structured pain point analysis, mapping each pain
 - `research/02-hiring.md` — capability gaps from hiring analysis
 - `research/03-news-ownership.md` — ownership implications and timeline pressure
 - `research/04-comparables.md` — lessons from comparable operators
-- `../../metier/services.md` — Metier service catalog
-- `../../metier/pain-point-mapping.md` — decision framework and archetype patterns
+- `../../projects/dc-gtm/dc-services/dc_services_metier.md` — Metier service catalog
+- `../../projects/dc-gtm/dc-services/dc_services_metier_pain_point.md` — decision framework and archetype patterns
 
 ## Analysis Steps
 

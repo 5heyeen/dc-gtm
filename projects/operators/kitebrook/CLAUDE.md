@@ -6,7 +6,7 @@ This folder contains research and operator intelligence for Kitebrook.
 
 1. Read `operator.md` for known context.
 2. Read `../../../CLAUDE.md` for the full workflow.
-3. Reference files at `../../../metier/` and prompt templates at `../../../templates/prompts/`.
+3. Reference files are at `../../../projects/dc-gtm/dc-services/dc_services_metier.md` and `../../../projects/dc-gtm/dc-services/dc_services_metier_pain_point.md`.
 
 ## Commands
 

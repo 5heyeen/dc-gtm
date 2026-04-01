@@ -39,7 +39,6 @@ dc-gtm/
 │   ├── 08-service-design/             # Service catalog and packaging
 │   └── 09-target-operators/           # Investment flows, TAM/SAM, revenue roadmap
 │
-├── metier/                            # Metier-specific strategy documents
 ├── templates/                         # Templates for research and meeting briefs
 └── scripts/                           # Utility scripts
 ```
@@ -145,15 +144,6 @@ Technology trends reshaping data center design and construction. Includes trend 
 ### `memories/` — Persistent Context
 
 Persistent learnings, context, and notes that carry across sessions.
-
-### `metier/` — Metier Strategy Documents
-
-Documents describing Metier's capabilities, services, and positioning for the DC market.
-
-| File | Purpose |
-|------|---------|
-| `services.md` | Metier's DC-specific service catalog (8 services) |
-| `pain-point-mapping.md` | Decision framework: pain point → service recommendation, including 4 operator archetype patterns |
 
 ### `templates/` — Templates
 
