@@ -7,7 +7,7 @@ Build a Claude Code agent (CLAUDE.md-based) that researches data center operator
 
 ## Subtasks
 
-1. **Define Metier's DC-specific service catalog** — Distill the Notion context into a concise `metier/services.md` that maps Metier's four pillars to data-center-specific value propositions (e.g., "Contract & Procurement Strategy" for helping operators without construction DNA select EPC contractors). Done when each relevant service has a 1-2 sentence DC-specific framing.
+1. **Define Metier's DC-specific service catalog** — Distill the Notion context into a concise `projects/dc-gtm/dc-services/dc_services_metier.md` that maps Metier's four pillars to data-center-specific value propositions (e.g., "Contract & Procurement Strategy" for helping operators without construction DNA select EPC contractors). Done when each relevant service has a 1-2 sentence DC-specific framing.
 
 2. **Create the operator profile template** — Design the structured markdown template (`templates/operator-profile.md`) that the agent fills in during research: company snapshot, ownership & funding (investor identity, fund type, capital amount, deployment timeline, investor requirements, exit horizon), strategy/market segment, key people, org capability assessment, job ad analysis, pain points, comparable operators. Done when the template covers all research dimensions including comprehensive funding fields.
 

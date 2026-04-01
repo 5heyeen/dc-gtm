@@ -10,7 +10,7 @@ Synthesize all research into a concise, actionable meeting brief. This is the fi
 - `research/03-news-ownership.md` — ownership and news
 - `research/04-comparables.md` — comparable operators
 - `research/05-pain-points.md` — pain point analysis
-- `../../metier/services.md` — for service descriptions
+- `../../projects/dc-gtm/dc-services/dc_services_metier.md` — for service descriptions
 - `../../templates/meeting-brief.md` — output template
 
 ## Generation Steps
