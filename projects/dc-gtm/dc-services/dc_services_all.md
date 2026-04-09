@@ -102,7 +102,7 @@ Building client's internal project management capability: project organization d
 **Potential for Norconsult:** No
 **Metier+Norconsult Advantage:** Strong — few can replicate
 **Independence Required:** Managed through governance
-**Competitors:** Turner & Townsend, Rambøll, Linesight
+**Competitors:** Turner & Townsend, Rambøll, Linesight, DLE Consulting (Nordics — strategy only), Grezya (pan-European — strategy only)
 
 Portfolio management and PMO for operators with multi-site pipelines. Which sites to develop first, how to sequence capital deployment across a portfolio of grid positions — portfolio optimization, not just single-site advisory.
 
@@ -125,6 +125,7 @@ Advising on how AI/ML workloads shape facility requirements (cooling, power dens
 **Theme:** Financial / Commercial, Stakeholder Management
 **Potential for Metier:** Yes
 **Potential for Norconsult:** No
+**Competitors:** DLE Consulting (Nordics), Grezya (pan-European)
 
 Securing anchor tenants and building customer pipeline to underpin financing. Bifrost matching Vinje site with Blackfuel and AAA hyperscaler (Nvidia/AMD/Google/AWS). Google expressing interest in Longum. Three-tier business models emerging: whitespace DC, GPU-as-a-service, AI-as-a-service — each targeting different customer segments (enterprise, government, research). Anchor tenant commitment is prerequisite for FID and construction financing.
 
@@ -274,7 +275,7 @@ Building municipal and community support for DC projects: local employment commi
 **Potential for Norconsult:** No
 **Metier+Norconsult Advantage:** Competitive — multiple rivals
 **Independence Required:** Accepted integrated
-**Competitors:** Turner & Townsend, Granlund, Rambøll, Arup
+**Competitors:** Turner & Townsend, Granlund, Rambøll, Arup, DLE Consulting (Nordics), Grezya (pan-European)
 
 Entirely DC-specific market analysis: supply/demand in MW capacity, absorption rates, pricing per kW/month, competitive landscape, cloud on-ramp proximity, and network latency radii — metrics with no analogue in conventional real estate. Delivered by specialist DC real estate firms (CBRE Data Center Solutions, JLL Data Centers, Cushman & Wakefield), management consultancies (McKinsey, BCG, EY-Parthenon), and specialist research firms (DC Byte, Structure Research, Uptime Institute). Entry decision: hyperscale self-build vs. colocation vs. AI/HPC purpose-built. 92% of industry respondents rate power access as most important site factor.
 
@@ -582,7 +583,7 @@ Independent reviews and quality assurance at concept stage, before FID. Natural 
 **Potential for Norconsult:** No
 **Metier+Norconsult Advantage:** Strong — few can replicate
 **Independence Required:** Strongly recommended
-**Competitors:** Turner & Townsend, Rambøll, Arup, Arcadis, Mitchell McDermott, Hill International
+**Competitors:** Turner & Townsend, Rambøll, Arup, Arcadis, Mitchell McDermott, Hill International, Grezya (M&A technical DD)
 
 Preparing investor-grade documentation for FID: verified CAPEX estimates, realistic schedules, risk quantification, pedagogical presentations for infrastructure funds. Fossefall explicitly needed 'trygghet mot investorer' — proof of a well-thought-through process. Operators must demonstrate credibility to close financing rounds (e.g. Fossefall's 100M then 400–500M EUR).
 
