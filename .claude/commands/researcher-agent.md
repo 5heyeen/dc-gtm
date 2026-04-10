@@ -80,6 +80,8 @@ If the user wants changes, work with them to adjust the list, then re-confirm. O
 
 For each approved subtask, generate a prompt chain and immediately execute it before moving to the next subtask. This keeps each subtask self-contained: plan it, research it, save it.
 
+**Rate limit discipline:** Subtasks are always processed sequentially (one at a time). Do not start the next subtask until the current one is fully saved to disk. This avoids compounding concurrent API load across multiple sub-skills.
+
 1. Create `workspace\tasks\` directory
 2. For each subtask, run the following sequence:
 
@@ -96,10 +98,11 @@ For each approved subtask, generate a prompt chain and immediately execute it be
    - Invoke `/run-prompt-chain` with the prompt chain file path as argument
    - `/run-prompt-chain` handles:
      - Classifying prompts as `[independent]` or `[sequential]`
-     - Running independent prompts in parallel via sub-agents
+     - Running independent prompts in **capped parallel batches of max 3 agents** to avoid rate limits
      - Running sequential chains in order with cumulative context
-     - Saving individual prompt outputs to `workspace\tasks\<nn>-<task-slug>\prompts\<nn>-<prompt-slug>.md`
+     - Saving individual prompt outputs to `workspace\tasks\<nn>-<task-slug>\prompts\<nn>-<prompt-slug>.md` **immediately as each completes**
      - Merging all outputs into `workspace\tasks\<nn>-<task-slug>\research.md`
+   - **If `/run-prompt-chain` reports a rate limit error:** wait 60 seconds, then retry the failed prompt(s) only. Retry up to 3 times (60s → 120s → 240s). Do not restart the whole chain.
 
 ### 3c. Save Prompt Outputs to Notion
 
@@ -210,11 +213,18 @@ Open diagrams/*.html in your browser for interactive visualisations.
 
 ## Error Handling
 
-- **Fail fast.** If any stage fails, stop immediately.
+- **Rate limit errors are retryable — do not fail fast on them.** If any sub-skill or agent returns a rate limit signal (HTTP 429, "rate limit exceeded", "out of credits", "overloaded", or similar):
+  1. Immediately write all completed outputs that exist in memory to their disk files before doing anything else.
+  2. Wait 60 seconds.
+  3. Retry the failed operation only (not the whole stage).
+  4. If it fails again, wait 120 seconds and retry. Then 240 seconds.
+  5. After 3 failed retries, stop and tell the user: which prompt/subtask failed, the workspace path, and which files were saved so they can resume manually.
+- **Save incrementally — never hold results in memory.** Write each prompt output file to disk the moment it is returned, before starting the next prompt or agent. Do not batch saves.
+- **Fail fast on non-rate-limit errors.** If any stage fails for a reason other than rate limiting, stop immediately.
 - **Report clearly.** Tell the user which stage failed, what error occurred, and what was completed successfully.
-- **Save what you have.** Before stopping on failure, ensure all completed outputs are saved to disk.
+- **Save what you have.** Before stopping on any failure, ensure all completed outputs are written to disk.
 - **Notion failures are non-fatal.** If Notion saves fail, continue with local saves and report the Notion errors at the end.
-- **Sub-skill failures.** If `/create-prompts`, `/run-prompt-chain`, `/synthesise-research`, `/select-diagram`, or `/executive-brief` fails, report the error with the skill name and stop.
+- **Sub-skill failures.** If `/create-prompts`, `/run-prompt-chain`, `/synthesise-research`, `/select-diagram`, or `/executive-brief` fails (non-rate-limit), report the error with the skill name and stop.
 
 ---
 
