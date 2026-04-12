@@ -412,20 +412,32 @@ if mismatches:
 PYEOF
 ```
 
-### 5c. Serve for Browser Inspection
+### 5c. Commit, Push & Provide Download Links
 
-Use `Bash` to start `http-server` serving the output directory:
+Commit and push the created Excel file so the user can download it from GitHub:
 
 ```bash
-npx http-server "<input-dir>/_output/output/" -p 0 --cors -s &
+git add "<input-dir>/_output/output/<filename>"
+git commit -m "Add recreated Excel: <filename>"
+git push -u origin <current-branch>
 ```
 
-Capture the port from the output and present the URL to the user.
+Then construct a **raw download link** using this format:
+```
+https://raw.githubusercontent.com/<owner>/<repo>/<branch>/<path-to-file>
+```
+
+Determine `<owner>` and `<repo>` from `git remote get-url origin` (parse the GitHub URL), and `<branch>` from `git branch --show-current`.
+
+Present the link to the user as a clickable markdown link:
+```
+- [<filename>](https://raw.githubusercontent.com/<owner>/<repo>/<branch>/<path-to-file>) (N KB)
+```
 
 ### 5d. User Approval
 
 Use `AskUserQuestion`:
-- "Created `<filename>` with N sheets and M cells. Verification: X% match. Open the file at `<URL>` to inspect. OK to proceed?"
+- "Created `<filename>` with N sheets and M cells. Verification: X% match. Download it from the link above. OK to proceed?"
 - Options: "Looks good — proceed", "Re-extract this file", "Skip this file"
 
 If the user wants re-extraction, go back to Stage 4 for this file group. If skip, move on.
@@ -474,15 +486,16 @@ Print a summary table:
 ─────────────────────────────────────────
 ```
 
-### 7b. Serve Files
+### 7b. Provide Download Links
 
-Use `Bash` to start `http-server` serving the output directory (if not already running):
+Ensure all files have been committed and pushed to the current branch (if not already done in Stage 5c). Then present **raw GitHub download links** for each file:
 
-```bash
-npx http-server "<input-dir>/_output/output/" -p 0 --cors -s &
+```
+- [<filename1>](https://raw.githubusercontent.com/<owner>/<repo>/<branch>/<path>) (N KB, M sheets)
+- [<filename2>](https://raw.githubusercontent.com/<owner>/<repo>/<branch>/<path>) (N KB, M sheets)
 ```
 
-Present the URL for each file.
+Determine `<owner>` and `<repo>` from `git remote get-url origin`, and `<branch>` from `git branch --show-current`.
 
 ### 7c. User Approval
 
@@ -668,17 +681,19 @@ Print the progress checklist (Stage 8 ✅).
 
 **Goal:** Present the final Excel files with formulas to the user.
 
-### 9a. Serve Final Files
+### 9a. Commit & Push Final Files
 
-Use `Bash` to start (or confirm running) `http-server` serving the output directory:
+Commit and push all final files (with formulas applied, if any) to the current branch:
 
 ```bash
-npx http-server "<input-dir>/_output/output/" -p 0 --cors -s &
+git add "<input-dir>/_output/output/"
+git commit -m "Finalize recreated Excel files with formulas"
+git push -u origin <current-branch>
 ```
 
 ### 9b. Final Summary
 
-Print:
+Determine `<owner>` and `<repo>` from `git remote get-url origin`, and `<branch>` from `git branch --show-current`. Then print:
 ```
 ─────────────────────────────────────────
  Spreadsheet Photo Organizer — Complete
@@ -688,8 +703,11 @@ Print:
    <filename1> — N sheets, M cells, K formulas
    <filename2> — N sheets, M cells, K formulas
 
+ Download Links:
+   - [<filename1>](https://raw.githubusercontent.com/<owner>/<repo>/<branch>/<path>) (N KB)
+   - [<filename2>](https://raw.githubusercontent.com/<owner>/<repo>/<branch>/<path>) (N KB)
+
  Output Directory: <input-dir>/_output/output/
- Download: <http-server URL>
 
  Workspace:
    _output/sorted/     — photos grouped by file
@@ -717,7 +735,7 @@ Print the final progress checklist with all stages ✅.
 - **Python script failures:** Show the full error output and ask the user for guidance via `AskUserQuestion`.
 - **Rate limit errors:** Follow the 60s → 120s → 240s retry backoff pattern. After 3 failed retries, stop and report which stage/photo failed and what was saved so far.
 - **Incremental saves:** All extraction JSONs are saved per-photo immediately. If the process is interrupted, the extraction data is preserved.
-- **http-server failures:** If `http-server` cannot start, fall back to printing the file path and tell the user to open it manually.
+- **git push failures:** If `git push` fails due to network errors, retry up to 4 times with exponential backoff (2s, 4s, 8s, 16s). If still failing, fall back to printing the local file path and tell the user to download manually.
 - **Agent (Opus 1M) failure:** If the formula detection agent fails or returns unparseable output, skip formula detection and present the values-only files as the final output.
 
 ---
@@ -733,4 +751,4 @@ Print the final progress checklist with all stages ✅.
 - **Update manifest.json** after each stage for resumability.
 - **Sanitize filenames** for directory names — remove characters that are invalid in file paths (`/`, `\`, `:`, `*`, `?`, `"`, `<`, `>`, `|`).
 - **Respect the user's skip decisions.** If the user skips a file or skips formula detection, do not re-ask.
-- **Keep http-server running** once started — do not restart it for each file. Reuse the same server instance.
+- **Use raw GitHub links for downloads.** Construct download URLs using `https://raw.githubusercontent.com/<owner>/<repo>/<branch>/<path>` — never use `github.com/blob/` links as those serve HTML pages, not the actual file content.
