@@ -1,0 +1,190 @@
+{
+  "file_name": "240-C-AA-001_01_001.xlsx",
+  "project": "PROJECT DCM103",
+  "description": "Application for Payment No.01 - Feb 26",
+  "company": "CTS Nordics",
+  "client": "Bulk Data Centers N01 DCM103 A5",
+  "sheets": {
+    "Cover Sheet": {
+      "source_photos": [
+        "IMG_5503.jpg"
+      ],
+      "content": "Title page with CTS Nordics branding, PROJECT DCM103, Application for Payment, Bulk Data Centers N01 DCM103 A5"
+    },
+    "Executive Summary": {
+      "source_photos": [
+        "IMG_5499.jpg",
+        "IMG_5500.jpg",
+        "IMG_5501.jpg",
+        "IMG_5502.jpg"
+      ],
+      "sections": [
+        "BUILDING ELEMENTS - 311,868,817 NOK",
+        "MECHANICAL INSTALLATIONS - 186,147,266 NOK",
+        "ELECTRICAL INSTALLATIONS - 231,397,848 NOK",
+        "SPECIAL PACKAGES - 98,506,800 NOK",
+        "FITOUT DATA HALLS (2 x 18 MW)",
+        "POOL, GENERATORS & CHILLERS - 474,489,222 NOK",
+        "Commissioning - 68,484,476 NOK",
+        "EXTERNAL WORKS AND LANDSCAPING - 34,860,000 NOK",
+        "Preliminaries",
+        "PROJECT TOTAL (Excl VAT & Contingencies) - N 1,848,422,821",
+        "Change Account - 30,800,224",
+        "PROJECT TOTAL + Change Account - N 1,834,102,807",
+        "Downpayment / Payback section",
+        "TOTAL GROSS Valuation: 568,991,653.31",
+        "Net Valuation in period: 882,834,555.83"
+      ]
+    },
+    "Breakdown": {
+      "source_photos": [
+        "IMG_5435.jpg through IMG_5497.jpg (63 photos)"
+      ],
+      "major_sections": [
+        {
+          "name": "PRELIMINARIES",
+          "start_row": 5,
+          "items": "CTS Management, Site Facilities, Site Security, Site Clearance, Site Infrastructure, Site Signage, Waste Management, Master Media, Remote Compliance, Temporary Services, Site IT, Surveys, Construction Plant, Consultant Fees, Project Insurances"
+        },
+        {
+          "name": "ENABLING WORKS AND SUBSTRUCTURE",
+          "start_row": 101,
+          "items": "Earthworks, Enabling Works, Construction Pit"
+        },
+        {
+          "name": "SUPERSTRUCTURE 1A",
+          "start_row": 127,
+          "items": "Structural Frame, Fire Protection, Columns, Bracing, Internal Walls, Floor Slabs, Finishes, Windows, Cladding, Doors, Roof"
+        },
+        {
+          "name": "SUPERSTRUCTURE OFFICE BUILDING",
+          "start_row": 240,
+          "items": "Similar structure to Superstructure 1A for office building"
+        },
+        {
+          "name": "PASSENGER & GOODS LIFTS",
+          "start_row": 350,
+          "items": "Goods Lift 5000kg, Service Lift FLRM"
+        },
+        {
+          "name": "MECHANICAL INSTALLATIONS",
+          "start_row": 365,
+          "total": 186147266,
+          "items": "Sanitary, Drainage, Fire Suppression, Cooling Systems, Process Piping, Air Distribution, Air Treatment, Water Treatment, Process Mechanical"
+        },
+        {
+          "name": "ELECTRICAL INSTALLATIONS",
+          "start_row": 462,
+          "total": 231397848,
+          "items": "Cable Management, Cable Containment, Grounding, Lightning Protection, Power Outlets, Distribution, Mains, Lighting, Emergency Lighting, Outdoor Power, CCTV"
+        },
+        {
+          "name": "SPECIAL PACKAGES",
+          "start_row": 585,
+          "total": 98506800,
+          "items": "DTA Basic, Data Fiber, Building Automation, Fire Alarm, Access Control, CCTV, BMS"
+        },
+        {
+          "name": "FITOUT TO TECHNICAL SPACES",
+          "start_row": 650,
+          "items": "Multiple repeating fitout areas with Load Bearing Structures, Internal Walls, Doors/Windows, Finishes, Services"
+        },
+        {
+          "name": "POOL, GENERATORS AND CHILLERS",
+          "start_row": 1020,
+          "total": 474489222
+        },
+        {
+          "name": "COMMISSIONING",
+          "start_row": 1035
+        },
+        {
+          "name": "EXTERNAL WORKS AND LANDSCAPING",
+          "start_row": 1045,
+          "total": 34860000,
+          "items": "Groundworks, Roads, Drainage, Landscaping, Fencing, Utilities"
+        },
+        {
+          "name": "OPTIONAL PRICING",
+          "start_row": 1130
+        }
+      ]
+    },
+    "Variations": {
+      "source_photos": [
+        "IMG_5498.jpg"
+      ],
+      "content": "Change Account with VO-001 (Magnetic Filters - 1,843,120 NOK), VO-002 (Glycol Loop Detector Valve - 14,908,124 NOK), Total approved: 19,860,224 NOK"
+    }
+  },
+  "photo_mapping": {
+    "IMG_5435": "Breakdown: PRELIMINARIES header and first rows (wide view with formula bar showing H143)",
+    "IMG_5436": "Breakdown: Close-up of PRELIMINARIES header columns",
+    "IMG_5438": "Breakdown: PRELIMINARIES with CTS Management staff listing",
+    "IMG_5439": "Breakdown: More staff items, Site Security, Site Clearance, Site Infrastructure",
+    "IMG_5440": "Breakdown: Site IT, Temporary Services, Surveys, Construction Plant, Consultant Fees",
+    "IMG_5441": "Breakdown: Construction charges, Project Insurances, ENABLING WORKS AND SUBSTRUCTURE header",
+    "IMG_5442": "Breakdown: Construction Pit, SUPERSTRUCTURE 1A header, Structural Frame",
+    "IMG_5443": "Breakdown: External Windows, Cladding, Internal Doors, Roof sections",
+    "IMG_5444": "Breakdown: Canopies, Structural Frame continuation, Fire Protection",
+    "IMG_5445": "Breakdown: Internal Walls, Floor Slabs, Finishes",
+    "IMG_5446": "Breakdown: Floor Finishes, Ceiling, Kitchen/WC Fittings",
+    "IMG_5447": "Breakdown: Superstructure 1A continuation - more internal details",
+    "IMG_5448": "Breakdown: SUPERSTRUCTURE OFFICE BUILDING header",
+    "IMG_5449": "Breakdown: Office Building internal walls, doors",
+    "IMG_5450": "Breakdown: Office Building finishes, Special Items",
+    "IMG_5451": "Breakdown: Kitchen/WC fittings, Signs, Other Fittings",
+    "IMG_5452": "Breakdown: More office building details, Rooftop section",
+    "IMG_5453": "Breakdown: Office building continuation, floor sections",
+    "IMG_5454": "Breakdown: Fitout sub-sections continuation",
+    "IMG_5455": "Breakdown: Kitchen Fittings, WC Fittings, Signs for office",
+    "IMG_5456": "Breakdown: More fitout details, structural elements",
+    "IMG_5457": "Breakdown: Internal walls, doors continuation",
+    "IMG_5458": "Breakdown: Furnishings, Glass Finishes, Ceiling installations",
+    "IMG_5459": "Breakdown: Office fitout continuation",
+    "IMG_5460": "Breakdown: PASSENGER & GOODS LIFTS, MECHANICAL INSTALLATIONS headers",
+    "IMG_5461": "Breakdown: Mechanical installations - commissioning, sanitary, drainage, fire suppression, cooling",
+    "IMG_5462": "Breakdown: Cooling systems detail - piping, valves, pumps",
+    "IMG_5463": "Breakdown: Equipment for air distribution, air treatment, purifying systems",
+    "IMG_5464": "Breakdown: Mechanical systems continuation, Primary Mechanical Systems",
+    "IMG_5465": "Breakdown: ELECTRICAL INSTALLATIONS header, cable management",
+    "IMG_5466": "Breakdown: Electrical - stations, equipment, HV switchgear, cabling",
+    "IMG_5467": "Breakdown: Power distribution, mains distribution, outdoor consumers",
+    "IMG_5468": "Breakdown: Emergency lighting, outdoor power and lighting",
+    "IMG_5469": "Breakdown: Outdoor lighting detail - high level and roof",
+    "IMG_5470": "Breakdown: SPECIAL PACKAGES header, DTA installations, Data Fiber",
+    "IMG_5471": "Breakdown: Building Automation, Fire Alarm Systems, Access Control",
+    "IMG_5472": "Breakdown: CCTV, Building Control, FITOUT TO TECHNICAL SPACES header",
+    "IMG_5473": "Breakdown: Fitout technical spaces - internal walls detail",
+    "IMG_5474": "Breakdown: Fitout - doors, finishes, ceilings",
+    "IMG_5475": "Breakdown: Fitout area repetition",
+    "IMG_5476": "Breakdown: Fitout area continuation",
+    "IMG_5477": "Breakdown: Fitout area repetition",
+    "IMG_5478": "Breakdown: Fitout area continuation",
+    "IMG_5479": "Breakdown: Fitout area repetition",
+    "IMG_5480": "Breakdown: Fitout area continuation",
+    "IMG_5481": "Breakdown: Fitout area repetition",
+    "IMG_5482": "Breakdown: Fitout area continuation",
+    "IMG_5483": "Breakdown: Fitout area repetition",
+    "IMG_5484": "Breakdown: Fitout area continuation",
+    "IMG_5485": "Breakdown: Fitout area repetition",
+    "IMG_5486": "Breakdown: Fitout area continuation",
+    "IMG_5487": "Breakdown: Fitout area continuation with yellow highlighted cell",
+    "IMG_5488": "Breakdown: Fitout area continuation",
+    "IMG_5489": "Breakdown: Fitout area repetition",
+    "IMG_5490": "Breakdown: Fitout area continuation",
+    "IMG_5491": "Breakdown: Glass Finishes, False Ceilings, POOL GENERATORS AND CHILLERS",
+    "IMG_5492": "Breakdown: COMMISSIONING section, EXTERNAL WORKS AND LANDSCAPING header",
+    "IMG_5493": "Breakdown: External works - site clearance, roads, drainage",
+    "IMG_5494": "Breakdown: External works continuation - walls, fences, paving",
+    "IMG_5495": "Breakdown: External works - roads, utilities, parking",
+    "IMG_5496": "Breakdown: External works total, OPTIONAL PRICING header",
+    "IMG_5497": "Breakdown: Optional Pricing detail items",
+    "IMG_5498": "Variations: Change Account page",
+    "IMG_5499": "Executive Summary: Top section - Building Elements, Mechanical",
+    "IMG_5500": "Executive Summary: Electrical, Special Packages, Fitout, Pool/Generators",
+    "IMG_5501": "Executive Summary: Pool/Generators, Commissioning, External Works, Totals",
+    "IMG_5502": "Executive Summary: Downpayment/Payback, Net Valuation",
+    "IMG_5503": "Cover Sheet: CTS Nordics, PROJECT DCM103, Application for Payment"
+  }
+}
