@@ -74,6 +74,28 @@ Print the progress checklist (Stage 0 ✅, all others ⬜).
 
 ---
 
+## Scaling Strategy
+
+Photo count determines the extraction approach. **NEVER** spawn a single agent to handle more than 10 photos — agents time out on large batches and all intermediate work is lost.
+
+| Photo count | Approach |
+|---|---|
+| **1–10** | Process directly in main conversation (no sub-agents needed) |
+| **11–30** | Use 2–3 parallel agents, each handling 5–10 photos |
+| **31–100** | Use batched parallel agents (3–5 photos each), 2–3 concurrent, multiple rounds |
+| **100+** | Same as above, with checkpoint verification between rounds |
+
+**Batch extraction loop** (used in Stages 4–6):
+1. Divide photos for a file group into batches of 3–5 photos.
+2. Launch 2–3 agents in parallel, each processing one batch.
+3. After agents return, verify that `_cells.json` files were saved for each photo.
+4. Repeat until all photos are processed.
+5. If a batch fails, only 3–5 photos need re-processing.
+
+**Checkpoint resume**: Before starting extraction, check which `_cells.json` files already exist in the extraction directory. Skip photos that already have extraction data. This allows resuming after interruptions.
+
+---
+
 ## Stage 1 — Photo Discovery & Sorting
 
 **Goal:** Read each photo, identify the Excel filename, and group photos into sub-folders.
@@ -213,68 +235,150 @@ Print the progress checklist (Stage 3 ✅).
 
 ## Stage 4 — Cell Value Extraction
 
-**Goal:** Extract every visible cell value from each photo with precise row/column positioning.
+**Goal:** Extract every visible cell value from each photo with precise row/column positioning. This is the most critical stage — extracting actual numbers, not summaries.
 
-Process one file group at a time. For each photo in the current file group:
+### 4a. Checkpoint Resume
 
-### 4a. Extract Cell Data
-
-Use the `Read` tool to examine the photo. After viewing it, perform a detailed cell-by-cell extraction.
-
-For each visible cell, extract:
-- **row**: integer row number (from the left margin)
-- **column**: column letter (from the top header)
-- **value**: the exact string as displayed in the cell
-- **data_type**: one of `number`, `text`, `date`, `currency`, `percentage`, `empty`
-- **formatting_notes**: any visible formatting — bold, italic, colored text, colored background, merged cells, borders, alignment
-
-**Extraction guidelines:**
-- Be precise about numbers: preserve decimal places exactly as shown (e.g., `1,234.56` not `1234.56`).
-- Currency symbols: include them (e.g., `$500`, `kr 1 000`).
-- Percentage values: include the `%` sign (e.g., `15.5%`).
-- Dates: preserve the displayed format (e.g., `2025-03-15`, `15/03/2025`, `Mar-25`).
-- Empty cells within the data area: include them with data_type `empty`.
-- Merged cells: note which cells are merged and assign the value to the top-left cell of the merge range.
-- If a cell value is hard to read (blurry, cut off, small text), mark it as `UNCERTAIN: <best guess>` and flag for user review.
-
-### 4b. Save Extraction Data
-
-Use `Bash` to save the extraction results for each photo as a JSON file via inline Python:
+Before starting extraction, check which photos already have extraction data:
 
 ```bash
-python3 -c "
-import json
-data = <extracted_cells_as_python_list>
-with open('<input-dir>/_output/extraction/<filename>/<photo_name>_cells.json', 'w') as f:
-    json.dump(data, f, indent=2)
-"
+ls <input-dir>/_output/extraction/<filename>/*_cells.json 2>/dev/null | wc -l
 ```
 
-Create the extraction sub-directory first if needed:
+Compare against the total photo count for this file group. Skip photos that already have `_cells.json` files. Print:
+```
+Checkpoint: N/M photos already extracted. Resuming from photo N+1.
+```
+
+### 4b. Batch Extraction Loop
+
+Divide remaining (un-extracted) photos into batches of **3–5 photos** each. For each round, launch **2–3 agents in parallel**, each processing one batch. Follow the Scaling Strategy section.
+
+Create the extraction sub-directory first:
 ```bash
 mkdir -p "<input-dir>/_output/extraction/<filename>/"
 ```
 
-### 4c. Handle Overlapping Regions
+For each batch, spawn an Agent with **this exact prompt template** (fill in the placeholders):
+
+```
+You are extracting cell data from spreadsheet photographs into JSON files.
+
+## Photos to process (do them IN ORDER):
+{numbered list of 3-5 photo paths}
+
+## Output directory:
+{extraction_dir}
+
+## Instructions
+
+For EACH photo, do these steps in order:
+
+1. **Read** the photo using the Read tool.
+2. **Identify** the active sheet tab (visible at the bottom of the spreadsheet window).
+3. **Identify** the visible row numbers (from the left margin) and column letters (from the top header).
+4. **Extract EVERY non-empty cell** visible in the photo. For each cell, record:
+   - "sheet": the active sheet tab name
+   - "row": the integer row number shown in the left margin
+   - "column": the column letter shown in the top header
+   - "value": the EXACT text or number displayed in the cell
+   - "data_type": one of "number", "text", "date", "currency", "percentage", "empty"
+
+5. **Save to disk IMMEDIATELY** before reading the next photo:
+   ```bash
+   python3 << 'PYEOF'
+   import json
+   data = [
+       # paste your extracted cells here as Python dicts
+   ]
+   with open("{extraction_dir}/{photo_name}_cells.json", "w") as f:
+       json.dump(data, f, indent=2)
+   print(f"Saved {len(data)} cells to {extraction_dir}/{photo_name}_cells.json")
+   PYEOF
+   ```
+
+6. **Confirm** by printing: "Saved {N} cells from {photo_name}"
+
+## CRITICAL RULES — READ CAREFULLY
+
+- **Extract ALL visible numbers** — every cost, quantity, unit price, total, percentage.
+  These numerical values are the MOST IMPORTANT part of the extraction.
+- **Use exact values as displayed**: "1,234,567" not "1234567", "15.5%" not "0.155"
+- **Row numbers come from the spreadsheet margin** (the numbers on the left side of the
+  spreadsheet), NOT from counting rows sequentially.
+- **Column letters come from the spreadsheet header** (A, B, C, ... shown at the top),
+  NOT from guessing.
+- **Do NOT summarize.** Do NOT write prose descriptions like "cost data follows".
+  Write the actual cell value for every single cell.
+- **Do NOT skip cells** because they seem repetitive or unimportant.
+- **Save EACH photo's JSON to disk BEFORE reading the next photo.** This is mandatory
+  for checkpoint/resume. If you read all photos first and save later, a timeout loses
+  everything.
+- If a value is hard to read, use "UNCERTAIN: <best guess>" as the value.
+
+## Example output for one photo
+
+For a photo showing rows 5-8, columns A-L on the "Breakdown" sheet:
+```json
+[
+  {"sheet": "Breakdown", "row": 5, "column": "A", "value": "1", "data_type": "number"},
+  {"sheet": "Breakdown", "row": 5, "column": "B", "value": "PR", "data_type": "text"},
+  {"sheet": "Breakdown", "row": 5, "column": "C", "value": "1.1", "data_type": "text"},
+  {"sheet": "Breakdown", "row": 5, "column": "H", "value": "CTS Management", "data_type": "text"},
+  {"sheet": "Breakdown", "row": 5, "column": "I", "value": "1", "data_type": "number"},
+  {"sheet": "Breakdown", "row": 5, "column": "J", "value": "Nr", "data_type": "text"},
+  {"sheet": "Breakdown", "row": 5, "column": "K", "value": "1,456,000", "data_type": "number"},
+  {"sheet": "Breakdown", "row": 5, "column": "L", "value": "1,456,000", "data_type": "number"},
+  {"sheet": "Breakdown", "row": 6, "column": "A", "value": "2", "data_type": "number"},
+  {"sheet": "Breakdown", "row": 6, "column": "H", "value": "Project Director", "data_type": "text"},
+  {"sheet": "Breakdown", "row": 6, "column": "K", "value": "890,000", "data_type": "number"},
+  {"sheet": "Breakdown", "row": 6, "column": "L", "value": "890,000", "data_type": "number"}
+]
+```
+
+A typical photo of a dense spreadsheet should produce 30-100+ cell entries.
+If you extract fewer than 15 cells from a photo that clearly shows data, you are
+missing values — go back and re-read the photo more carefully.
+```
+
+### 4c. Verify Each Batch
+
+After each batch of agents returns, verify that JSONs were saved:
+
+```bash
+for photo in <batch_photos>; do
+  if [ -f "<extraction_dir>/${photo%.jpg}_cells.json" ]; then
+    echo "✅ $photo — $(python3 -c "import json; print(len(json.load(open('<extraction_dir>/${photo%.jpg}_cells.json'))))")"
+  else
+    echo "❌ $photo — MISSING"
+  fi
+done
+```
+
+If any JSONs are missing, re-run extraction for those specific photos before proceeding.
+
+### 4d. Handle Overlapping Regions
 
 When the same cell appears in multiple photos (overlapping coverage):
 1. Compare the extracted values from each photo.
 2. If they match, use the value as-is.
-3. If they differ, flag the discrepancy and prefer the value from the photo where the cell is more centrally positioned (less edge distortion).
-4. Record all discrepancies for user review.
+3. If they differ, prefer the value from the photo where the cell is more centrally positioned (less edge distortion).
+4. Record discrepancies for user review.
 
-### 4d. Report Extraction Summary
+This deduplication happens automatically in Stage 5a when reading all JSONs — later extractions overwrite earlier ones for the same cell, and UNCERTAIN values are always overwritten by confident values.
 
-After processing all photos for a file group, print:
+### 4e. Report Extraction Summary
+
+After ALL batches for a file group are complete, print:
 ```
 Extraction Summary: <filename>
-  Photos processed: N
+  Photos processed: N / M total
   Total cells extracted: N
   Uncertain values: N (flagged for review)
-  Overlap discrepancies: N
+  Average cells per photo: N
 ```
 
-If there are uncertain values or discrepancies, list them briefly.
+**Quality check:** If average cells per photo is below 20, warn that extraction may be too shallow and offer to re-extract.
 
 Print the progress checklist (Stage 4 🔄 with per-file status).
 
@@ -286,7 +390,32 @@ Print the progress checklist (Stage 4 🔄 with per-file status).
 
 For each file group:
 
-### 5a. Create Excel File
+### 5a. Verify Extraction Completeness
+
+Before creating the Excel, verify that extraction is adequate:
+
+```bash
+python3 << 'PYEOF'
+import os, json, glob
+extraction_dir = "<input-dir>/_output/extraction/<filename>/"
+json_files = sorted(glob.glob(os.path.join(extraction_dir, "*_cells.json")))
+total_cells = 0
+for jf in json_files:
+    with open(jf) as f:
+        total_cells += len(json.load(f))
+avg = total_cells / len(json_files) if json_files else 0
+print(f"Extraction coverage: {len(json_files)} photos processed, {total_cells} total cells")
+print(f"Average cells per photo: {avg:.1f}")
+if avg < 20:
+    print("WARNING: Average cells per photo is low — extraction may be too shallow")
+PYEOF
+```
+
+If fewer than 80% of photos have JSONs, use `AskUserQuestion` to warn:
+- "Only N/M photos were extracted ({pct}%). Re-extract missing photos before creating Excel?"
+- Options: "Re-extract missing", "Proceed anyway"
+
+### 5b. Create Excel File
 
 Use `Bash` to run inline Python that creates the Excel file:
 
@@ -368,7 +497,7 @@ print(f"Total cells written: {sum(len(cells) for cells in all_cells.values())}")
 PYEOF
 ```
 
-### 5b. Verify Against Extraction Data
+### 5c. Verify Against Extraction Data
 
 Use `Bash` to run inline Python that reads back the created Excel and compares against the extraction JSONs:
 
@@ -412,7 +541,7 @@ if mismatches:
 PYEOF
 ```
 
-### 5c. Commit, Push & Provide Download Links
+### 5d. Commit, Push & Provide Download Links
 
 Commit and push the created Excel file so the user can download it from GitHub:
 
@@ -422,19 +551,21 @@ git commit -m "Add recreated Excel: <filename>"
 git push -u origin <current-branch>
 ```
 
-Then construct a **raw download link** using this format:
+Then use the GitHub MCP tool `mcp__github__get_file_contents` to retrieve the file's **`download_url`** from the API response:
+
 ```
-https://raw.githubusercontent.com/<owner>/<repo>/<branch>/<path-to-file>
+mcp__github__get_file_contents(owner, repo, path="<path-to-file>", ref="refs/heads/<branch>")
 ```
 
-Determine `<owner>` and `<repo>` from `git remote get-url origin` (parse the GitHub URL), and `<branch>` from `git branch --show-current`.
+The API response includes a `download_url` field — this is an authenticated URL that works even for private repos. Present it to the user:
 
-Present the link to the user as a clickable markdown link:
 ```
-- [<filename>](https://raw.githubusercontent.com/<owner>/<repo>/<branch>/<path-to-file>) (N KB)
+- [<filename>](<download_url>) (N KB)
 ```
 
-### 5d. User Approval
+**Important:** Never construct `raw.githubusercontent.com` URLs manually — they don't work for private repos. Always use the `download_url` from the GitHub API response.
+
+### 5e. User Approval
 
 Use `AskUserQuestion`:
 - "Created `<filename>` with N sheets and M cells. Verification: X% match. Download it from the link above. OK to proceed?"
@@ -448,22 +579,29 @@ Print the progress checklist (Stage 5 ✅ for current file).
 
 ## Stage 6 — Iterate All Files
 
-**Goal:** Process all file groups through Stages 4–5 sequentially.
+**Goal:** Process all file groups through Stages 4–5 sequentially, using the batch extraction loop from the Scaling Strategy.
 
 For each file group identified in Stage 1:
 
 1. Print the progress checklist showing which file is current.
-2. Run Stage 4 (Cell Value Extraction) for this file group.
-3. Run Stage 5 (Excel Creation & Verification) for this file group.
-4. Get user approval before moving to the next file.
+2. **Check for existing extraction data** (checkpoint resume — see Stage 4a).
+3. **Run Stage 4 in batches** following the Scaling Strategy:
+   - Divide un-extracted photos into batches of 3–5.
+   - Launch 2–3 parallel agents per round, each processing one batch.
+   - After each round, verify JSONs were saved (Stage 4c).
+   - Repeat until all photos for this file group are extracted.
+4. Run Stage 5 (Excel Creation & Verification) for this file group.
+5. Get user approval before moving to the next file.
 
-Track per-file status in the checklist:
+Track per-file and per-batch status in the checklist:
 ```
  🔄  Stage 6 — Iterate All Files
-      ✅  Budget-2025.xlsx (3 sheets, 450 cells)
-      🔄  Sales-Report.xlsx  ← extracting
+      ✅  Budget-2025.xlsx (3 sheets, 2,450 cells)
+      🔄  Sales-Report.xlsx  ← batch 3/7 (15/35 photos extracted)
       ⬜  Cost-Data.xlsx
 ```
+
+**Critical:** Do NOT process multiple file groups in parallel — each needs user approval before continuing. But DO process photo batches within a file group in parallel.
 
 After all files are processed, print the progress checklist (Stage 6 ✅).
 
@@ -488,14 +626,16 @@ Print a summary table:
 
 ### 7b. Provide Download Links
 
-Ensure all files have been committed and pushed to the current branch (if not already done in Stage 5c). Then present **raw GitHub download links** for each file:
+Ensure all files have been committed and pushed to the current branch (if not already done in Stage 5d).
+
+For each Excel file, use `mcp__github__get_file_contents` to get the `download_url` from the API. Present them as clickable links:
 
 ```
-- [<filename1>](https://raw.githubusercontent.com/<owner>/<repo>/<branch>/<path>) (N KB, M sheets)
-- [<filename2>](https://raw.githubusercontent.com/<owner>/<repo>/<branch>/<path>) (N KB, M sheets)
+- [<filename1>](<download_url1>) (N KB, M sheets)
+- [<filename2>](<download_url2>) (N KB, M sheets)
 ```
 
-Determine `<owner>` and `<repo>` from `git remote get-url origin`, and `<branch>` from `git branch --show-current`.
+**Important:** Always use the `download_url` from the GitHub API — never construct `raw.githubusercontent.com` URLs manually (they fail for private repos).
 
 ### 7c. User Approval
 
@@ -693,7 +833,7 @@ git push -u origin <current-branch>
 
 ### 9b. Final Summary
 
-Determine `<owner>` and `<repo>` from `git remote get-url origin`, and `<branch>` from `git branch --show-current`. Then print:
+Use `mcp__github__get_file_contents` to get the `download_url` for each file. Then print:
 ```
 ─────────────────────────────────────────
  Spreadsheet Photo Organizer — Complete
@@ -704,8 +844,8 @@ Determine `<owner>` and `<repo>` from `git remote get-url origin`, and `<branch>
    <filename2> — N sheets, M cells, K formulas
 
  Download Links:
-   - [<filename1>](https://raw.githubusercontent.com/<owner>/<repo>/<branch>/<path>) (N KB)
-   - [<filename2>](https://raw.githubusercontent.com/<owner>/<repo>/<branch>/<path>) (N KB)
+   - [<filename1>](<download_url1>) (N KB)
+   - [<filename2>](<download_url2>) (N KB)
 
  Output Directory: <input-dir>/_output/output/
 
@@ -751,4 +891,6 @@ Print the final progress checklist with all stages ✅.
 - **Update manifest.json** after each stage for resumability.
 - **Sanitize filenames** for directory names — remove characters that are invalid in file paths (`/`, `\`, `:`, `*`, `?`, `"`, `<`, `>`, `|`).
 - **Respect the user's skip decisions.** If the user skips a file or skips formula detection, do not re-ask.
-- **Use raw GitHub links for downloads.** Construct download URLs using `https://raw.githubusercontent.com/<owner>/<repo>/<branch>/<path>` — never use `github.com/blob/` links as those serve HTML pages, not the actual file content.
+- **Use GitHub API for download links.** Always use `mcp__github__get_file_contents` to get the `download_url` — never construct `raw.githubusercontent.com` URLs manually (they fail for private repos) and never use `github.com/blob/` links (those serve HTML pages).
+- **Never spawn an agent for more than 10 photos.** Large batches cause timeouts and total loss of extraction work. Use the Scaling Strategy.
+- **Save extraction JSONs per-photo, immediately.** Each photo's cells must be written to a `_cells.json` file before reading the next photo. Never hold extraction results only in memory.
