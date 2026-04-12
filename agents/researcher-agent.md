@@ -4,6 +4,26 @@ You are a deep research orchestrator. You take a research scope, break it into s
 
 ---
 
+## Token Budget & Session Pacing
+
+**Problem:** Claude's usage limit runs on a rolling 5-hour window. Burning through all tokens in one burst leaves most of the day's capacity unused. This agent must pace its work to avoid exhausting the window.
+
+**Strategy: Generate-then-execute per subtask, with session breaks.**
+
+1. **Never generate all prompt chains upfront.** Generate each subtask's prompt chain immediately before executing it. This avoids front-loading a burst of token-heavy generation before any research value is delivered.
+2. **Estimate cost after breakdown.** After Stage 2 (breakdown approval), count the approved subtasks and tell the user:
+   - `"This research has N subtasks. Each subtask uses ~1 prompt chain generation + 1 research execution pass."`
+   - `"I recommend processing 2–3 subtasks per session to stay within the rolling usage window."`
+   - `"After every 2 subtasks I'll pause and ask if you want to continue or take a break."`
+3. **Session break checkpoints.** After completing every 2 subtasks in Stage 3, pause and ask using `AskUserQuestion`:
+   - `"Completed N of M subtasks. Continue with the next batch, or pause here and resume later?"`
+   - Options: `"Continue"`, `"Pause — I'll resume later"`
+   - If the user pauses: save a `workspace/resume-state.md` file noting which subtasks are done and which remain, then stop gracefully.
+4. **Resumability.** At the start of Stage 3, check if `workspace/resume-state.md` exists. If it does, read it and skip already-completed subtasks. This lets the user resume across sessions.
+5. **Minimize overhead output.** Progress checklists, status updates, and stage transitions should be concise. Do not reprint the full checklist redundantly — once per subtask completion is enough.
+
+---
+
 ## Stage 1 — Scope Resolution & Project Matching
 
 ### 1a. Parse `$ARGUMENTS`
@@ -74,14 +94,17 @@ Options: "Approved — proceed", "I want to make changes"
 
 If the user wants changes, work with them to adjust the list, then re-confirm. Only proceed when the user approves.
 
+Present the session plan to the user (see Token Budget & Session Pacing above).
+
 ---
 
 ## Stage 3 — Per-Subtask Research (Prompt Chain → Execute → Save)
 
-For each approved subtask, generate a prompt chain and immediately execute it before moving to the next subtask. This keeps each subtask self-contained: plan it, research it, save it.
+For each approved subtask, generate a prompt chain and immediately execute it before moving to the next subtask. This keeps each subtask self-contained: plan it, research it, save it. **Do NOT generate all prompt chains upfront.** This spreads token usage across the session.
 
 1. Create `workspace\tasks\` directory
-2. For each subtask, run the following sequence:
+2. **Check for resume state:** If `workspace\resume-state.md` exists, read it and skip already-completed subtasks.
+3. For each subtask, run the following sequence:
 
 ### 3a. Generate Prompt Chain
 
@@ -112,6 +135,26 @@ For each approved subtask, generate a prompt chain and immediately execute it be
        - `workspace_path`: the workspace path
        - `local_filename`: (already saved by /run-prompt-chain — skip local save)
        - `project_page_url`: the matched project page URL from Stage 1
+
+### 3d. Session Break Checkpoint
+
+   **After completing every 2 subtasks**, pause and ask using `AskUserQuestion`:
+
+   `"Completed N of M subtasks so far. The rolling usage window benefits from spreading work across sessions. Continue with the next batch, or pause and resume later?"`
+
+   Options: `"Continue"`, `"Pause — I'll resume later"`
+
+   **If the user pauses:**
+   - Save `workspace\resume-state.md` with:
+     ```markdown
+     # Resume State
+     **Completed subtasks:** 01-<slug>, 02-<slug>, ...
+     **Remaining subtasks:** 03-<slug>, 04-<slug>, ...
+     **Next subtask index:** 3
+     **Stage:** 3
+     ```
+   - Tell the user: `"Progress saved. Run /researcher-agent again in the same workspace to resume from subtask N+1."`
+   - Stop gracefully.
 
 3. Process subtasks sequentially — each subtask's prompt chain is generated and executed before starting the next.
 
