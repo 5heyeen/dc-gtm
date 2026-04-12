@@ -8,19 +8,19 @@ You are a deep research orchestrator. You take a research scope, break it into s
 
 **Problem:** Claude's usage limit runs on a rolling 5-hour window. Burning through all tokens in one burst leaves most of the day's capacity unused. This agent must pace its work to avoid exhausting the window.
 
-**Strategy: Generate-then-execute per subtask, with session breaks.**
+**Strategy: One subtask at a time by default, with session breaks. Parallel execution is opt-in.**
 
-1. **Never generate all prompt chains upfront.** Generate each subtask's prompt chain immediately before executing it. This avoids front-loading a burst of token-heavy generation before any research value is delivered.
-2. **Estimate cost after breakdown.** After Stage 2 (breakdown approval), count the approved subtasks and tell the user:
-   - `"This research has N subtasks. Each subtask uses ~1 prompt chain generation + 1 research execution pass."`
-   - `"I recommend processing 2–3 subtasks per session to stay within the rolling usage window."`
-   - `"After every 2 subtasks I'll pause and ask if you want to continue or take a break."`
-3. **Session break checkpoints.** After completing every 2 subtasks in Stage 3, pause and ask using `AskUserQuestion`:
-   - `"Completed N of M subtasks. Continue with the next batch, or pause here and resume later?"`
-   - Options: `"Continue"`, `"Pause — I'll resume later"`
-   - If the user pauses: save a `workspace/resume-state.md` file noting which subtasks are done and which remain, then stop gracefully.
-4. **Resumability.** At the start of Stage 3, check if `workspace/resume-state.md` exists. If it does, read it and skip already-completed subtasks. This lets the user resume across sessions.
-5. **Minimize overhead output.** Progress checklists, status updates, and stage transitions should be concise. Do not reprint the full checklist redundantly — once per subtask completion is enough.
+1. **Never generate all prompt chains upfront.** Each subtask's chain is generated immediately before its execution.
+2. **Default: sequential execution.** Even independent subtasks run one at a time by default. This is the most token-conservative approach — it minimises burst usage and maximises how long you can work within the rolling window.
+3. **Parallel execution is opt-in.** After presenting the session plan, ask the user: `"Would you like independent subtasks to run in parallel (faster, but uses tokens faster) or sequentially (slower, but conserves your rolling usage window)?"`. Only run parallel waves if the user explicitly chooses parallel mode.
+4. **Estimate cost after breakdown.** After Stage 2 (breakdown approval), count the approved subtasks and waves, then tell the user:
+   - `"This research has N subtasks in M waves. I'll process them sequentially by default (one at a time) to conserve your rolling usage window."`
+   - `"I recommend completing 1–2 waves per session to stay within limits."`
+   - `"After each wave I'll pause and ask if you want to continue or take a break."`
+5. **Session break checkpoints.** After each wave completes in Stage 3, pause and ask the user to continue or pause.
+   - If the user pauses: save a `workspace/resume-state.md` file noting which waves/subtasks are done and which remain, then stop gracefully.
+6. **Resumability.** At the start of Stage 3, check if `workspace/resume-state.md` exists. If it does, read it and skip already-completed waves. This lets the user resume across sessions.
+7. **Minimize overhead output.** Progress checklists, status updates, and stage transitions should be concise. Do not reprint the full checklist redundantly — once per wave completion is enough.
 
 ---
 
@@ -76,53 +76,106 @@ Break the research scope into structured subtasks. This happens **before** any p
 2. Invoke `/decompose-task` with the scope text as the argument
 3. After `/decompose-task` completes, ensure the breakdown is saved as `workspace\01-breakdown.md`
 
+### 2a. Classify Subtask Dependencies
+
+After the breakdown is produced, classify each subtask as `[independent]` or `[sequential]`:
+
+- **`[independent]`** — Can be researched from scratch without needing results from other subtasks. Most research subtasks are independent (e.g., "Market size analysis", "Competitive landscape", "Hiring trends").
+- **`[sequential]`** — Depends on findings from one or more earlier subtasks. Typically synthesis or mapping tasks (e.g., "Pain point mapping" that needs company research + hiring data first).
+
+**Classification guidance:**
+- Research tasks that gather facts from external sources are usually `[independent]`
+- Tasks that synthesise, compare, or map findings from other subtasks are `[sequential]`
+- When in doubt, tag as `[independent]` — false independence produces slightly less context-aware output; false dependence wastes time by blocking parallelism
+
 ### CHECKPOINT — User Approval
 
 **Do not proceed past this point without explicit user approval.**
 
-Show the subtasks from the breakdown and ask using `AskUserQuestion`:
+Show the subtasks with their dependency tags and ask using `AskUserQuestion`:
 
 "Here are the research subtasks I've identified:
 
-1. <subtask 1>
-2. <subtask 2>
+1. `[independent]` <subtask 1>
+2. `[independent]` <subtask 2>
+3. `[independent]` <subtask 3>
+4. `[sequential]` <subtask 4> (depends on 1–3)
 ...
 
-Does this look right? You can approve, add tasks, remove tasks, or modify them."
+Sequential subtasks wait for their dependencies. By default, even independent subtasks run one at a time to conserve tokens.
+
+Does this look right? You can approve, change dependency tags, add tasks, remove tasks, or modify them."
 
 Options: "Approved — proceed", "I want to make changes"
 
 If the user wants changes, work with them to adjust the list, then re-confirm. Only proceed when the user approves.
 
-Present the session plan to the user (see Token Budget & Session Pacing above).
+Present the session plan to the user (see Token Budget & Session Pacing above). Then ask:
+
+`"Would you like independent subtasks to run in parallel (faster, but uses tokens faster) or one at a time (slower, but conserves your rolling usage window)?"`
+
+Options: `"Parallel"`, `"One at a time"` (default)
+
+Store the user's choice as the **execution mode** for Stage 3.
 
 ---
 
-## Stage 3 — Per-Subtask Research (Prompt Chain → Execute → Save)
+## Stage 3 — Per-Subtask Research (Chain → Execute → Save)
 
-For each approved subtask, generate a prompt chain and immediately execute it before moving to the next subtask. This keeps each subtask self-contained: plan it, research it, save it. **Do NOT generate all prompt chains upfront.** This spreads token usage across the session.
+**Do NOT generate all prompt chains upfront.** Each subtask's chain is generated immediately before execution. By default, all subtasks run one at a time to conserve tokens. If the user opted into parallel mode, independent subtasks within a wave run concurrently.
 
 1. Create `workspace\tasks\` directory
 2. **Check for resume state:** If `workspace\resume-state.md` exists, read it and skip already-completed subtasks.
-3. For each subtask, run the following sequence:
+3. **Build execution waves** from the classified subtask list (see below).
+4. Process waves in order.
 
-### 3a. Generate Prompt Chain
+### 3a. Build Execution Waves
 
-   - Derive `<task-slug>` from the subtask title (kebab-case, max 6 words)
-   - Create `workspace\tasks\<nn>-<task-slug>\` directory (nn = 01, 02, ...)
-   - Invoke `/create-prompts` with the subtask description as argument
-   - Direct local save to the task directory
-   - Copy/move the output to `workspace\tasks\<nn>-<task-slug>\prompt-chain.md`
+Group the subtask list into waves by scanning top to bottom:
 
-### 3b. Execute Prompt Chain
+1. Collect consecutive `[independent]` subtasks into a wave.
+2. When you hit a `[sequential]` subtask, close the current wave. The sequential subtask becomes its own wave (runs alone, after prior waves complete).
+3. Continue until all subtasks are assigned to a wave.
 
-   - Invoke `/run-prompt-chain` with the prompt chain file path as argument
-   - `/run-prompt-chain` handles:
-     - Classifying prompts as `[independent]` or `[sequential]`
-     - Running independent prompts in parallel via sub-agents
-     - Running sequential chains in order with cumulative context
-     - Saving individual prompt outputs to `workspace\tasks\<nn>-<task-slug>\prompts\<nn>-<prompt-slug>.md`
-     - Merging all outputs into `workspace\tasks\<nn>-<task-slug>\research.md`
+**Example:** Given subtasks `[ind] [ind] [ind] [seq] [ind] [ind]`, the waves are:
+- Wave 1: subtasks 1, 2, 3 (independent)
+- Wave 2: subtask 4 (sequential)
+- Wave 3: subtasks 5, 6 (independent)
+
+### 3b. Execute Waves
+
+Process waves in order. After each wave completes fully (all subtasks saved to disk), move to the next.
+
+#### Default mode (one at a time):
+
+Process each subtask in the wave sequentially, regardless of whether it is `[independent]` or `[sequential]`. This is the most token-conservative approach:
+
+1. Derive `<task-slug>`, create the task directory
+2. Invoke `/create-prompts` with the subtask description as argument
+3. Save the chain to `workspace\tasks\<nn>-<task-slug>\prompt-chain.md`
+4. Invoke `/run-prompt-chain` with the chain file as argument
+5. `/run-prompt-chain` handles prompt-level parallelism internally (independent prompts in batches of 3, sequential prompts in order)
+6. **If rate limit error:** wait 60s, retry failed prompt(s) only. Retry up to 3 times (60s → 120s → 240s).
+7. Run **3c. Save Prompt Outputs to Notion** for this subtask.
+
+#### Parallel mode (user opted in):
+
+For waves containing `[independent]` subtasks, run them concurrently.
+
+**Cap at 2 concurrent subtask executions.** If the wave has more than 2 subtasks, split into sub-waves of 2.
+
+For each sub-wave, spawn one `Agent` per subtask (subagent_type: `general-purpose`). Each agent handles the **full chain → execute → save cycle** for its subtask:
+
+1. Generate its prompt chain via `/create-prompts`
+2. Save the chain to `workspace\tasks\<nn>-<task-slug>\prompt-chain.md`
+3. Execute via `/run-prompt-chain`
+4. Save outputs to `workspace\tasks\<nn>-<task-slug>\prompts\` and `research.md`
+
+Wait for all agents in the sub-wave to return before starting the next sub-wave. **Save each agent's output to disk immediately when it returns** — do not wait for sibling agents.
+
+After the full parallel wave completes, run **3c. Save Prompt Outputs to Notion** for each subtask in the wave.
+
+For waves containing a `[sequential]` subtask, always run it in the main execution flow (not as a sub-agent), so it has access to prior subtasks' research context. Use the same sequential steps as default mode above.
 
 ### 3c. Save Prompt Outputs to Notion
 
@@ -135,12 +188,13 @@ For each approved subtask, generate a prompt chain and immediately execute it be
        - `workspace_path`: the workspace path
        - `local_filename`: (already saved by /run-prompt-chain — skip local save)
        - `project_page_url`: the matched project page URL from Stage 1
+   - After Notion save completes, print the checklist marking the subtask ✅
 
 ### 3d. Session Break Checkpoint
 
-   **After completing every 2 subtasks**, pause and ask using `AskUserQuestion`:
+   **After each wave completes**, pause and ask using `AskUserQuestion`:
 
-   `"Completed N of M subtasks so far. The rolling usage window benefits from spreading work across sessions. Continue with the next batch, or pause and resume later?"`
+   `"Wave N complete (M of T subtasks done). The rolling usage window benefits from spreading work across sessions. Continue with the next wave, or pause and resume later?"`
 
    Options: `"Continue"`, `"Pause — I'll resume later"`
 
@@ -150,13 +204,12 @@ For each approved subtask, generate a prompt chain and immediately execute it be
      # Resume State
      **Completed subtasks:** 01-<slug>, 02-<slug>, ...
      **Remaining subtasks:** 03-<slug>, 04-<slug>, ...
-     **Next subtask index:** 3
+     **Remaining waves:** <wave descriptions>
+     **Next wave index:** N
      **Stage:** 3
      ```
-   - Tell the user: `"Progress saved. Run /researcher-agent again in the same workspace to resume from subtask N+1."`
+   - Tell the user: `"Progress saved. Run /researcher-agent again in the same workspace to resume from wave N."`
    - Stop gracefully.
-
-3. Process subtasks sequentially — each subtask's prompt chain is generated and executed before starting the next.
 
 ---
 
