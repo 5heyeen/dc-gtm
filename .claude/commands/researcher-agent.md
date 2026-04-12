@@ -42,18 +42,19 @@ Legend: ✅ done  🔄 in progress  ⬜ not started  ❌ failed
 
 **Problem:** Claude's usage limit runs on a rolling 5-hour window. Burning through all tokens in one burst leaves most of the day's capacity unused. This agent must pace its work to avoid exhausting the window.
 
-**Strategy: Generate-then-execute per subtask, with session breaks.**
+**Strategy: One subtask at a time by default, with session breaks. Parallel execution is opt-in.**
 
-1. **Never generate all prompt chains upfront.** Each subtask's chain is generated immediately before its execution — whether running solo or in a parallel wave.
-2. **Estimate cost after breakdown.** After Stage 2 (breakdown approval), count the approved subtasks and waves, then tell the user:
-   - `"This research has N subtasks in M waves. Independent subtasks within a wave run in parallel; sequential subtasks wait for dependencies."`
-   - `"I recommend completing 1–2 waves per session to stay within the rolling usage window."`
+1. **Never generate all prompt chains upfront.** Each subtask's chain is generated immediately before its execution.
+2. **Default: sequential execution.** Even independent subtasks run one at a time by default. This is the most token-conservative approach — it minimises burst usage and maximises how long you can work within the rolling window.
+3. **Parallel execution is opt-in.** After presenting the session plan, ask the user: `"Would you like independent subtasks to run in parallel (faster, but uses tokens faster) or sequentially (slower, but conserves your rolling usage window)?"`. Only run parallel waves if the user explicitly chooses parallel mode.
+4. **Estimate cost after breakdown.** After Stage 2 (breakdown approval), count the approved subtasks and waves, then tell the user:
+   - `"This research has N subtasks in M waves. I'll process them sequentially by default (one at a time) to conserve your rolling usage window."`
+   - `"I recommend completing 1–2 waves per session to stay within limits."`
    - `"After each wave I'll pause and ask if you want to continue or take a break."`
-3. **Session break checkpoints.** After each wave completes in Stage 3, pause and ask the user to continue or pause.
+5. **Session break checkpoints.** After each wave completes in Stage 3, pause and ask the user to continue or pause.
    - If the user pauses: save a `workspace/resume-state.md` file noting which waves/subtasks are done and which remain, then stop gracefully.
-4. **Resumability.** At the start of Stage 3, check if `workspace/resume-state.md` exists. If it does, read it and skip already-completed waves. This lets the user resume across sessions.
-5. **Minimize overhead output.** Progress checklists, status updates, and stage transitions should be concise. Do not reprint the full checklist redundantly — once per wave completion is enough.
-6. **Parallel waves are token-efficient.** Independent subtasks in a parallel wave each run as self-contained agents — they generate their own chain and execute it. This is faster AND avoids front-loading all chains before any execution begins.
+6. **Resumability.** At the start of Stage 3, check if `workspace/resume-state.md` exists. If it does, read it and skip already-completed waves. This lets the user resume across sessions.
+7. **Minimize overhead output.** Progress checklists, status updates, and stage transitions should be concise. Do not reprint the full checklist redundantly — once per wave completion is enough.
 
 ---
 
@@ -137,7 +138,7 @@ Show the subtasks with their dependency tags and ask using `AskUserQuestion`:
 4. `[sequential]` <subtask 4> (depends on 1–3)
 ...
 
-Independent subtasks will run in parallel within each session batch. Sequential subtasks wait for their dependencies.
+Sequential subtasks wait for their dependencies. By default, even independent subtasks run one at a time to conserve tokens.
 
 Does this look right? You can approve, change dependency tags, add tasks, remove tasks, or modify them."
 
@@ -147,13 +148,19 @@ If the user wants changes, work with them to adjust the list, then re-confirm. O
 
 After approval, **print the progress checklist** (Stages 1–2 ✅, Stage 3 🔄 with all subtasks ⬜, Stages 4–5 ⬜).
 
-Present the session plan to the user (see Token Budget & Session Pacing above).
+Present the session plan to the user (see Token Budget & Session Pacing above). Then ask:
+
+`"Would you like independent subtasks to run in parallel (faster, but uses tokens faster) or one at a time (slower, but conserves your rolling usage window)?"`
+
+Options: `"Parallel"`, `"One at a time"` (default)
+
+Store the user's choice as the **execution mode** for Stage 3.
 
 ---
 
 ## Stage 3 — Per-Subtask Research (Chain → Execute → Save)
 
-**Do NOT generate all prompt chains upfront.** Each subtask's chain is generated immediately before execution. Independent subtasks within a wave run in parallel; sequential subtasks wait for their dependencies.
+**Do NOT generate all prompt chains upfront.** Each subtask's chain is generated immediately before execution. By default, all subtasks run one at a time to conserve tokens. If the user opted into parallel mode, independent subtasks within a wave run concurrently.
 
 1. Create `workspace\tasks\` directory
 2. **Check for resume state:** If `workspace\resume-state.md` exists, read it and skip already-completed subtasks.
@@ -164,22 +171,36 @@ Present the session plan to the user (see Token Budget & Session Pacing above).
 
 Group the subtask list into waves by scanning top to bottom:
 
-1. Collect consecutive `[independent]` subtasks into a **parallel wave**.
-2. When you hit a `[sequential]` subtask, close the current wave. The sequential subtask becomes its own **sequential wave** (runs alone, after prior waves complete).
+1. Collect consecutive `[independent]` subtasks into a wave.
+2. When you hit a `[sequential]` subtask, close the current wave. The sequential subtask becomes its own wave (runs alone, after prior waves complete).
 3. Continue until all subtasks are assigned to a wave.
 
 **Example:** Given subtasks `[ind] [ind] [ind] [seq] [ind] [ind]`, the waves are:
-- Wave 1 (parallel): subtasks 1, 2, 3
-- Wave 2 (sequential): subtask 4
-- Wave 3 (parallel): subtasks 5, 6
+- Wave 1: subtasks 1, 2, 3 (independent)
+- Wave 2: subtask 4 (sequential)
+- Wave 3: subtasks 5, 6 (independent)
 
 ### 3b. Execute Waves
 
 Process waves in order. After each wave completes fully (all subtasks saved to disk), move to the next.
 
-#### For a parallel wave:
+#### Default mode (one at a time):
 
-**Cap at 2 concurrent subtask executions** to balance speed against token budget. If the wave has more than 2 subtasks, split into sub-waves of 2.
+Process each subtask in the wave sequentially, regardless of whether it is `[independent]` or `[sequential]`. This is the most token-conservative approach:
+
+1. Derive `<task-slug>`, create the task directory
+2. Invoke `/create-prompts` with the subtask description as argument
+3. Save the chain to `workspace\tasks\<nn>-<task-slug>\prompt-chain.md`
+4. Invoke `/run-prompt-chain` with the chain file as argument
+5. `/run-prompt-chain` handles prompt-level parallelism internally (independent prompts in batches of 3, sequential prompts in order)
+6. **If rate limit error:** wait 60s, retry failed prompt(s) only. Retry up to 3 times (60s → 120s → 240s).
+7. Run **3c. Save Prompt Outputs to Notion** for this subtask.
+
+#### Parallel mode (user opted in):
+
+For waves containing `[independent]` subtasks, run them concurrently.
+
+**Cap at 2 concurrent subtask executions.** If the wave has more than 2 subtasks, split into sub-waves of 2.
 
 For each sub-wave, spawn one `Agent` per subtask (subagent_type: `general-purpose`). Each agent handles the **full chain → execute → save cycle** for its subtask:
 
@@ -192,17 +213,7 @@ Wait for all agents in the sub-wave to return before starting the next sub-wave.
 
 After the full parallel wave completes, run **3c. Save Prompt Outputs to Notion** for each subtask in the wave.
 
-#### For a sequential wave:
-
-Run the subtask in the main execution flow (not as a sub-agent), so it has access to prior subtasks' research context:
-
-1. Derive `<task-slug>`, create the task directory
-2. Invoke `/create-prompts` with the subtask description as argument
-3. Save the chain to `workspace\tasks\<nn>-<task-slug>\prompt-chain.md`
-4. Invoke `/run-prompt-chain` with the chain file as argument
-5. `/run-prompt-chain` handles prompt-level parallelism internally (independent prompts in batches of 3, sequential prompts in order)
-6. **If rate limit error:** wait 60s, retry failed prompt(s) only. Retry up to 3 times (60s → 120s → 240s).
-7. Run **3c. Save Prompt Outputs to Notion** for this subtask.
+For waves containing a `[sequential]` subtask, always run it in the main execution flow (not as a sub-agent), so it has access to prior subtasks' research context. Use the same sequential steps as default mode above.
 
 ### 3c. Save Prompt Outputs to Notion
 
