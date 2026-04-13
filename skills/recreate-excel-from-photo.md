@@ -339,39 +339,71 @@ Follow this exact sequence for each photo:
    Note the first and last visible row (e.g., "Visible rows: 3 through 22").
 
 3. **Extract column headers** — Find the header row (usually the first row with bold
-   text labels). For each column, record the header text:
+   text labels). For each column, record the EXACT header text as displayed in the photo.
+   Do NOT paraphrase or translate headers — use the exact words shown:
    ```
-   A=Post, B=COST ELEMENT, C=(empty), D=Budget, E=Reestimate, F=Budget with allowance, ...
+   A=Item no., B=Cost Element, C=Budget, D=Deviations, E=Budget with Deviations, ...
    ```
+   **Common mistake:** Writing "COST ELEMENT" when the photo says "Cost Element", or
+   "Reestimate" when the photo says "Deviations". Always read the exact text.
 
 4. **Extract data cells** — For each data row, trace each cell UP to its column letter
    and verify it aligns with the correct header. Record the cell.
+   
+   **Number format rules:**
+   - Preserve the EXACT display format from the photo
+   - Norwegian format uses spaces as thousand separators: "764 628 753" not "764,628,753"
+   - Negative numbers may use parentheses: "(10 000 000)" not "-10000000"
+   - Do NOT convert or reformat numbers — write exactly what you see
 
 5. **Validation pass** — Review all extracted cells and check:
-   - Is every number under a numeric column header? (Budget, Reestimate, Total, etc.)
-   - Is every text string under a text column header? (COST ELEMENT, Description, etc.)
+   - Is every number under a numeric column header? (Budget, Deviations, Total, etc.)
+   - Is every text string under a text column header? (Cost Element, Description, etc.)
    - Are the row numbers consistent with what's visible in the left margin?
+   - Does every value ACTUALLY appear in the photo? Never invent or hallucinate values.
    - If anything looks misaligned, re-read the photo and fix the mapping.
 
-## Example output for one photo
+## Example: Correct extraction from a Budget sheet photo
 
-For a photo showing rows 5-8, columns A-L on the "Breakdown" sheet:
+Source photo shows the "Budget" tab with rows 15-27, columns A-J.
+
+**Step 1 — Read column headers (row 15):**
+```
+A=Item no., B=Cost Element, C=Budget, D=Deviations, E=Budget with Deviations,
+F=(empty), G=Booked per 07/04-26, H=Expected accrued Accumulated - payment,
+I=Remaining, J=Apr. 26
+```
+
+**Step 2 — Extract data (rows 16-27):**
 ```json
 [
-  {"sheet": "Breakdown", "row": 5, "column": "A", "value": "1", "data_type": "number"},
-  {"sheet": "Breakdown", "row": 5, "column": "B", "value": "PR", "data_type": "text"},
-  {"sheet": "Breakdown", "row": 5, "column": "C", "value": "1.1", "data_type": "text"},
-  {"sheet": "Breakdown", "row": 5, "column": "H", "value": "CTS Management", "data_type": "text"},
-  {"sheet": "Breakdown", "row": 5, "column": "I", "value": "1", "data_type": "number"},
-  {"sheet": "Breakdown", "row": 5, "column": "J", "value": "Nr", "data_type": "text"},
-  {"sheet": "Breakdown", "row": 5, "column": "K", "value": "1,456,000", "data_type": "number"},
-  {"sheet": "Breakdown", "row": 5, "column": "L", "value": "1,456,000", "data_type": "number"},
-  {"sheet": "Breakdown", "row": 6, "column": "A", "value": "2", "data_type": "number"},
-  {"sheet": "Breakdown", "row": 6, "column": "H", "value": "Project Director", "data_type": "text"},
-  {"sheet": "Breakdown", "row": 6, "column": "K", "value": "890,000", "data_type": "number"},
-  {"sheet": "Breakdown", "row": 6, "column": "L", "value": "890,000", "data_type": "number"}
+  {"sheet": "Budget", "row": 15, "column": "A", "value": "Item no.", "data_type": "text"},
+  {"sheet": "Budget", "row": 15, "column": "B", "value": "Cost Element", "data_type": "text"},
+  {"sheet": "Budget", "row": 15, "column": "C", "value": "Budget", "data_type": "text"},
+  {"sheet": "Budget", "row": 15, "column": "D", "value": "Deviations", "data_type": "text"},
+  {"sheet": "Budget", "row": 15, "column": "E", "value": "Budget with Deviations", "data_type": "text"},
+  {"sheet": "Budget", "row": 16, "column": "A", "value": "100", "data_type": "number"},
+  {"sheet": "Budget", "row": 16, "column": "B", "value": "CTS costs +S", "data_type": "text"},
+  {"sheet": "Budget", "row": 16, "column": "C", "value": "764 628 753", "data_type": "number"},
+  {"sheet": "Budget", "row": 16, "column": "D", "value": "228 493 637", "data_type": "number"},
+  {"sheet": "Budget", "row": 16, "column": "E", "value": "993 122 390", "data_type": "number"},
+  {"sheet": "Budget", "row": 17, "column": "A", "value": "100", "data_type": "number"},
+  {"sheet": "Budget", "row": 17, "column": "B", "value": "CTS milestone penalties", "data_type": "text"},
+  {"sheet": "Budget", "row": 17, "column": "D", "value": "(10 000 000)", "data_type": "number"},
+  {"sheet": "Budget", "row": 17, "column": "E", "value": "(10 000 000)", "data_type": "number"},
+  {"sheet": "Budget", "row": 18, "column": "A", "value": "102", "data_type": "number"},
+  {"sheet": "Budget", "row": 18, "column": "B", "value": "Operational investments/costs", "data_type": "text"},
+  {"sheet": "Budget", "row": 19, "column": "A", "value": "125", "data_type": "number"},
+  {"sheet": "Budget", "row": 19, "column": "B", "value": "WS fit-out (I)", "data_type": "text"},
+  {"sheet": "Budget", "row": 19, "column": "C", "value": "150 000", "data_type": "number"},
+  {"sheet": "Budget", "row": 19, "column": "D", "value": "(109 932 538)", "data_type": "number"},
+  {"sheet": "Budget", "row": 19, "column": "E", "value": "40 067 462", "data_type": "number"}
 ]
 ```
+
+**Step 3 — Validate:** Every number is under a numeric column (C=Budget, D=Deviations,
+E=Budget with Deviations). Every text is under column B (Cost Element). Row numbers
+match the left margin. Norwegian number format preserved with space separators.
 
 A typical photo of a dense spreadsheet should produce 30-100+ cell entries.
 If you extract fewer than 15 cells from a photo that clearly shows data, you are
