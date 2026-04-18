@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Norconsult DC Service Coverage vs Full Lifecycle</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; padding: 24px; background: #f8f9fa; color: #1a1a2e; }
+  h1 { font-size: 1.3rem; font-weight: 700; margin-bottom: 4px; }
+  p.subtitle { font-size: 0.85rem; color: #666; margin: 0 0 24px; }
+  .grid { display: grid; grid-template-columns: 140px repeat(8, 1fr); gap: 2px; max-width: 1100px; }
+  .header-cell { font-size: 0.68rem; font-weight: 600; text-align: center; padding: 8px 4px; background: #2c5f8a; color: #fff; border-radius: 4px; cursor: default; }
+  .row-label { font-size: 0.78rem; font-weight: 600; padding: 10px 8px; display: flex; align-items: center; background: #fff; border-radius: 4px; border-left: 3px solid #2c5f8a; }
+  .cell { border-radius: 4px; padding: 10px 6px; text-align: center; font-size: 0.72rem; font-weight: 600; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; position: relative; display: flex; align-items: center; justify-content: center; min-height: 44px; }
+  .cell:hover { transform: scale(1.08); box-shadow: 0 4px 16px rgba(0,0,0,0.18); z-index: 10; }
+  .confirmed { background: #27ae60; color: #fff; }
+  .partial { background: #f39c12; color: #fff; }
+  .absent { background: #e74c3c; color: #fff; }
+  .na { background: #ecf0f1; color: #bbb; }
+  .legend { display: flex; gap: 20px; margin-top: 20px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; }
+  .legend-dot { width: 16px; height: 16px; border-radius: 3px; flex-shrink: 0; }
+  .tooltip { position: fixed; background: #1a1a2e; color: #fff; padding: 10px 14px; border-radius: 8px; font-size: 0.78rem; max-width: 260px; pointer-events: none; z-index: 100; line-height: 1.5; display: none; }
+  .phase-row { display: contents; }
+</style>
+</head>
+<body>
+<h1>Norconsult DC Service Coverage vs Full Project Lifecycle</h1>
+<p class="subtitle">Which DC service phases Norconsult covers, claims, or cannot deliver — based on confirmed project evidence</p>
+
+<div class="grid" id="grid"></div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot confirmed"></div> Confirmed (evidenced in projects)</div>
+  <div class="legend-item"><div class="legend-dot partial"></div> Claimed / partial (no project evidence)</div>
+  <div class="legend-item"><div class="legend-dot absent"></div> Absent (no claim, no evidence)</div>
+  <div class="legend-item"><div class="legend-dot na"></div> Not applicable</div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+const phases = [
+  'Feasibility\n& Concept','Site\nSelection','FEED\nDesign','Detailed\nMEP','Procurement\nSupport','Construction\nAdmin','Commissioning\n/ IST','Operations\n& Asset Mgmt'
+];
+
+const services = [
+  {
+    label: 'HV Grid Engineering (420kV)',
+    cells: ['confirmed','partial','confirmed','na','partial','confirmed','na','na'],
+    tooltips: [
+      'Pre-FEED power studies (N01 Støleheia)',
+      'Claimed in service page; no standalone site selection reference',
+      'Grid connection FEED (420kV Støleheia)',
+      'N/A — HV grid is external to MEP fit-out',
+      'Long-lead HV equipment procurement (N01)',
+      'Engineering: 2× 420kV/145kV substations, 1.7km lines',
+      'N/A — commissioning of HV assets is Statnett/utility scope',
+      'Not evidenced'
+    ]
+  },
+  {
+    label: 'EPCM / Construction Mgmt',
+    cells: ['na','na','na','na','confirmed','confirmed','partial','na'],
+    tooltips: [
+      'N/A — EPCM engages post-FEED',
+      'N/A',
+      'N/A — EPCM starts at procurement phase',
+      'N/A',
+      'Procurement management (anskaffelse) at N01',
+      'Full CM, HSE, supplier follow-up at N01 (NOK 3B+ project)',
+      'Systematisk ferdigstillelse — handover management only, not IST',
+      'Not in scope for EPCM contractors'
+    ]
+  },
+  {
+    label: 'Regulatory Planning',
+    cells: ['confirmed','confirmed','na','na','na','na','na','na'],
+    tooltips: [
+      'Planprogram + KU (Telemark, Vestfold for Statkraft)',
+      'Regulatory plans approved by municipalities (Skien 2018, Vestfold on hold)',
+      'N/A — planning ends before FEED',
+      'N/A','N/A','N/A','N/A','N/A'
+    ]
+  },
+  {
+    label: 'Civil / Structural / Geotechnical',
+    cells: ['partial','partial','partial','confirmed','partial','confirmed','na','na'],
+    tooltips: [
+      'Feasibility screening (general competency, no DC-specific reference)',
+      'Site surveys, geotechnical screening',
+      'Structural concept (campus-scale)',
+      'Campus civil/structural at N01; Aas-Jakobsen acquisition adds depth',
+      'Civil contractor package tendering',
+      'Campus earthworks, foundations, building structures at Støleheia',
+      'N/A','N/A'
+    ]
+  },
+  {
+    label: 'MEP Redundancy Design',
+    cells: ['na','na','absent','absent','absent','absent','absent','na'],
+    tooltips: [
+      'N/A',
+      'N/A',
+      'No FEED for UPS/CRAC/busbar/redundancy architecture evidenced',
+      'No MEP fit-out design: UPS, CRAC/CRAH, cooling, busbar — absent',
+      'No MEP equipment procurement advisory evidenced',
+      'No MEP construction supervision for data hall interiors',
+      'Cannot commission what was not designed',
+      'N/A'
+    ]
+  },
+  {
+    label: 'Sustainability / BREEAM',
+    cells: ['partial','na','partial','partial','na','na','na','partial'],
+    tooltips: [
+      '"Green solutions" narrative; no specific DC sustainability study reference',
+      'N/A',
+      'PUE/WUE targets — claimed, not evidenced in DC project',
+      'BREEAM-NOR accreditation; EU Taxonomy alignment — general capability',
+      'N/A',
+      'N/A',
+      'N/A',
+      'ESG/CSRD reporting capability; no DC operations reference'
+    ]
+  },
+  {
+    label: 'IST / Commissioning',
+    cells: ['na','na','na','na','na','na','absent','na'],
+    tooltips: [
+      'N/A','N/A','N/A','N/A','N/A','N/A',
+      'Entirely absent — no IST evidence anywhere. Systematisk ferdigstillelse ≠ IST.',
+      'N/A'
+    ]
+  },
+  {
+    label: "Owner's Engineer / PMC",
+    cells: ['absent','absent','absent','absent','absent','absent','absent','absent'],
+    tooltips: [
+      'Structural conflict: Norconsult is the EPCM contractor, not the independent advisor',
+      'No site selection TDD track record',
+      'Cannot independently review FEED it produced',
+      'Cannot independently review MEP it did not design',
+      'Cannot independently validate its own procurement',
+      'Cannot independently oversee its own CM work',
+      'Cannot certify its own systematic completion',
+      'Not marketed; no reference'
+    ]
+  }
+];
+
+const grid = document.getElementById('grid');
+const tooltip = document.getElementById('tooltip');
+
+// Header row
+const corner = document.createElement('div');
+corner.className = 'cell na';
+corner.style.background = '#fff';
+grid.appendChild(corner);
+
+phases.forEach(p => {
+  const h = document.createElement('div');
+  h.className = 'header-cell';
+  h.textContent = p.replace(/\n/g,' ');
+  grid.appendChild(h);
+});
+
+// Data rows
+services.forEach(svc => {
+  const label = document.createElement('div');
+  label.className = 'row-label';
+  label.textContent = svc.label;
+  grid.appendChild(label);
+
+  svc.cells.forEach((status, i) => {
+    const cell = document.createElement('div');
+    cell.className = `cell ${status}`;
+    cell.textContent = status === 'confirmed' ? '✓' : status === 'partial' ? '~' : status === 'absent' ? '✗' : '—';
+
+    cell.addEventListener('mousemove', e => {
+      tooltip.style.display = 'block';
+      tooltip.style.left = (e.clientX + 14) + 'px';
+      tooltip.style.top = (e.clientY - 10) + 'px';
+      tooltip.innerHTML = `<strong>${svc.label}</strong><br>${phases[i].replace('\n',' ')}<br><br>${svc.tooltips[i]}`;
+    });
+    cell.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
+    grid.appendChild(cell);
+  });
+});
+</script>
+</body>
+</html>

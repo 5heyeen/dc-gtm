@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Metier DC GTM — Post-Acquisition Postures</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; padding: 24px; background: #f8f9fa; color: #1a1a2e; }
+  h1 { font-size: 1.3rem; font-weight: 700; margin-bottom: 4px; }
+  p.subtitle { font-size: 0.85rem; color: #666; margin: 0 0 28px; }
+  .flow { display: flex; flex-direction: column; align-items: center; gap: 0; max-width: 900px; }
+  .node { border-radius: 10px; padding: 14px 22px; text-align: center; cursor: pointer; transition: box-shadow 0.2s, transform 0.15s; position: relative; }
+  .node:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+  .node h3 { margin: 0 0 4px; font-size: 0.95rem; }
+  .node p { margin: 0; font-size: 0.78rem; opacity: 0.9; }
+  .acquisition { background: #2c5f8a; color: #fff; width: 520px; }
+  .decision { background: #7f8c8d; color: #fff; width: 360px; border-radius: 50%; padding: 16px; }
+  .posture-a { background: #27ae60; color: #fff; width: 380px; }
+  .posture-b { background: #e67e22; color: #fff; width: 380px; }
+  .closed { background: #e74c3c; color: #fff; width: 380px; }
+  .targets { background: #fff; border: 2px solid; border-radius: 8px; padding: 12px 16px; font-size: 0.78rem; width: 380px; }
+  .targets.green { border-color: #27ae60; }
+  .targets.orange { border-color: #e67e22; }
+  .arrow { font-size: 1.4rem; color: #aaa; margin: 2px 0; }
+  .row { display: flex; gap: 32px; justify-content: center; align-items: flex-start; width: 100%; }
+  .col { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #888; margin-top: 4px; }
+  .badge { display: inline-block; background: #e74c3c; color: #fff; border-radius: 4px; font-size: 0.65rem; font-weight: 700; padding: 2px 6px; margin-left: 6px; vertical-align: middle; }
+  .detail-panel { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 14px 18px; font-size: 0.8rem; line-height: 1.6; margin-top: 6px; display: none; width: 340px; }
+  ul { margin: 6px 0 0; padding-left: 18px; }
+  li { margin-bottom: 4px; }
+  .click-hint { font-size: 0.68rem; color: rgba(255,255,255,0.7); margin-top: 4px; }
+</style>
+</head>
+<body>
+<h1>Metier DC GTM — Post-Acquisition Postures</h1>
+<p class="subtitle">Norconsult acquired Metier Group AS on 17 December 2025 (NOK 480M EV). Metier retains its brand as a separate entity. Click each node to expand detail.</p>
+
+<div class="flow">
+  <!-- Acquisition fact -->
+  <div class="node acquisition" onclick="toggle('acq-detail')">
+    <h3>Norconsult acquires Metier Group AS</h3>
+    <p>17 Dec 2025 · NOK 480M EV · 250 staff · NOK 494M revenue · Separate brand retained</p>
+    <p class="click-hint">Click to expand</p>
+  </div>
+  <div class="detail-panel" id="acq-detail">
+    <strong>Deal facts:</strong>
+    <ul>
+      <li>Agreement: 5 Nov 2025 · Closed: 17 Dec 2025</li>
+      <li>Price: EV NOK 480M; share payment NOK 475M</li>
+      <li>Financed: NOK 400M term loan</li>
+      <li>Metier EBITA margin: 12% (NOK 60M adjusted)</li>
+      <li>Norconsult rationale: adds PM methodology and early-phase consulting to technical delivery</li>
+      <li>Integration: Metier retained as separate brand — unlike Aas-Jakobsen (being merged)</li>
+    </ul>
+  </div>
+
+  <div class="arrow">↓</div>
+
+  <!-- Conflict check -->
+  <div class="node decision" onclick="toggle('conflict-detail')">
+    <h3>Conflict check at intake</h3>
+    <p>Does this project have a Norconsult role?</p>
+    <p class="click-hint">Click to expand</p>
+  </div>
+  <div class="detail-panel" id="conflict-detail">
+    <strong>Known Norconsult DC conflicts (close Metier's independent advisory path):</strong>
+    <ul>
+      <li>Bulk Infrastructure N01 — Norconsult holds EPCM</li>
+      <li>Google/Statkraft Telemark — Norconsult holds regulatory planning</li>
+      <li>Statkraft Project Vestfold — Norconsult holds regulatory planning</li>
+      <li>Any future project where Norconsult bids EPCM or design</li>
+    </ul>
+    Sophisticated clients will find group ownership via Brønnøysund/Euronext filings. Do not claim independence without verifying the conflict register.
+  </div>
+
+  <div class="arrow">↓</div>
+
+  <!-- Two postures -->
+  <div class="row">
+    <div class="col">
+      <div class="label">YES — Norconsult involved</div>
+      <div class="node posture-a" onclick="toggle('posture-a-detail')">
+        <h3>Posture A: Group Synergy</h3>
+        <p>Pitch Norconsult technical delivery + Metier PM governance as integrated group offer</p>
+        <p class="click-hint">Click to expand</p>
+      </div>
+      <div class="detail-panel" id="posture-a-detail" style="border-color:#27ae60">
+        <strong>What this looks like:</strong>
+        <ul>
+          <li>Norconsult: HV grid, civil, EPCM execution, regulatory</li>
+          <li>Metier: PM framework, stage-gate governance, investor reporting</li>
+          <li>Single group accountability — lean into it, don't hide it</li>
+          <li>Useful where client wants integrated delivery and trusts Norconsult group</li>
+        </ul>
+        <strong>Targets:</strong>
+        <ul>
+          <li>Bulk Infrastructure (future phases post-2026 EPCM)</li>
+          <li>Statkraft-linked new operators entering Norway</li>
+          <li>Domestic operators who want one-stop engineering + PM</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="label">NO — clean slate project</div>
+      <div class="node posture-b" onclick="toggle('posture-b-detail')">
+        <h3>Posture B: Selective Independence</h3>
+        <p>Metier as independent owner's advisor — requires active conflict hygiene</p>
+        <p class="click-hint">Click to expand</p>
+      </div>
+      <div class="detail-panel" id="posture-b-detail" style="border-color:#e67e22">
+        <strong>What this looks like:</strong>
+        <ul>
+          <li>Metier acts as PMC / Owner's Engineer for operators with no Norconsult relationship</li>
+          <li>Independence is real on these projects — group conflict register is clear</li>
+          <li>Most valuable for lender advisory where independence is contractually required</li>
+        </ul>
+        <strong>Targets:</strong>
+        <ul>
+          <li>New Norway entrants: hyperscaler supply-chain partners, Icelandic/Finnish operators</li>
+          <li>PE/fund-backed operators not in Norconsult pipeline</li>
+          <li>Norwegian public sector DC (Statsbygg, municipalities)</li>
+          <li>Any operator seeking Lender's Independent Engineer where Norconsult is not EPCM</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow" style="margin-top:16px;">↓</div>
+
+  <!-- Closed opportunity -->
+  <div class="node closed" onclick="toggle('closed-detail')">
+    <h3>❌ CLOSED — "Independent advisor vs. EPCM contractor" pitch<span class="badge">Pre-acquisition only</span></h3>
+    <p>Positioning Metier against Norconsult as the independent alternative — no longer available on any Norconsult project</p>
+  </div>
+  <div class="detail-panel" id="closed-detail" style="border-color:#e74c3c">
+    The entire pre-acquisition research rationale — "Norconsult is the EPCM contractor, Metier is the independent owner's advisor above them" — is now unavailable where Norconsult holds a role. This was the strongest competitive argument and is structurally foreclosed on Bulk N01, Telemark, Vestfold, and any future Norconsult-engaged project.
+    <br><br>
+    <strong>Remaining combined group gap:</strong>
+    <ul>
+      <li>IST / Commissioning — absent from both entities</li>
+      <li>EN 50600 / Uptime Institute certification expertise — absent</li>
+      <li>MEP redundancy design (UPS, CRAC, Tier III/IV) — absent</li>
+      <li>Credible Lender's IE on Norconsult EPCM projects — structurally unavailable</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+function toggle(id) {
+  const el = document.getElementById(id);
+  el.style.display = el.style.display === 'block' ? 'none' : 'block';
+}
+</script>
+</body>
+</html>

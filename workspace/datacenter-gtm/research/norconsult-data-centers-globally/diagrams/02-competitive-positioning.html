@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Norwegian DC Engineering — Competitive Positioning</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; padding: 24px; background: #f8f9fa; }
+  h1 { font-size: 1.3rem; font-weight: 700; margin-bottom: 4px; }
+  p.subtitle { font-size: 0.85rem; color: #666; margin: 0 0 20px; }
+  #chart-container { position: relative; max-width: 720px; }
+  canvas { border: 1px solid #ddd; border-radius: 8px; background: #fff; cursor: crosshair; }
+  .tooltip { position: fixed; background: #1a1a2e; color: #fff; padding: 10px 14px; border-radius: 8px; font-size: 0.78rem; max-width: 280px; pointer-events: none; z-index: 100; line-height: 1.6; display: none; }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 16px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; cursor: pointer; }
+  .legend-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<h1>Norwegian DC Engineering — Competitive Positioning</h1>
+<p class="subtitle">Firms plotted on two axes: HV grid/EPCM depth (X) vs. MEP/commissioning depth (Y). Bubble size = estimated Norway DC project count.</p>
+<div id="chart-container">
+  <canvas id="chart" width="720" height="500"></canvas>
+</div>
+<div class="legend" id="legend"></div>
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+const firms = [
+  {
+    name: 'Norconsult',
+    x: 0.12, y: 0.18,
+    size: 32, color: '#2c5f8a',
+    detail: 'Norway #1 engineering firm (7,200 staff)\n5 confirmed DC projects — all Norway\nStrength: 420kV HV grid + EPCM execution\nGap: MEP fit-out, IST commissioning, Owner\'s Engineer\nKey reference: Bulk Infrastructure N01 (NOK 3B+)\nOwns Metier since Dec 2025'
+  },
+  {
+    name: 'COWI',
+    x: 0.56, y: 0.55,
+    size: 26, color: '#27ae60',
+    detail: 'Named in Nordic DC Construction Market report\n900+ Norway employees\nStrength: MEP + sustainability + urban infill\nKey reference: Skygard Oslo (full mandate)\nCompetes directly with Norconsult for Norwegian operators'
+  },
+  {
+    name: 'Ramboll / EYP',
+    x: 0.78, y: 0.85,
+    size: 38, color: '#8e44ad',
+    detail: '300 dedicated global DC specialists\n70M+ sq ft designed worldwide\nStrength: IST commissioning, Owner\'s Engineer, heat reuse\nKey reference: Meta Odense (45MW heat pump)\nGlobal leader — Denmark HQ; Norway is secondary market'
+  },
+  {
+    name: 'Sweco',
+    x: 0.65, y: 0.62,
+    size: 22, color: '#e67e22',
+    detail: 'Pan-Nordic DC practice (Finland/UK led)\nIn-house CFD for DC cooling\nStrength: Full lifecycle incl. commissioning\nTier 1–4 fault-tolerance design\nActive in Norwegian colocation segment'
+  },
+  {
+    name: 'WSP / kW MCE',
+    x: 0.85, y: 0.90,
+    size: 30, color: '#c0392b',
+    detail: 'Top-5 global DC engineering firm\n~500 Norway staff but DC led from USA/UK\nAcquired kW MCE (100% DC-focused CoE)\nStrength: AI-ready design, speed-to-market\nLimited Norway DC project track record'
+  },
+  {
+    name: 'Arup',
+    x: 0.72, y: 0.88,
+    size: 28, color: '#16a085',
+    detail: '~400 dedicated DC specialists globally\nGlobal Reference Design (standardised hyperscale blueprint)\nNamed Nordic DC vendor (Arizton 2023–2028)\nStrength: Innovation leadership, owner-side advisory\nNo confirmed Norway DC project found'
+  },
+  {
+    name: 'Multiconsult',
+    x: 0.06, y: 0.12,
+    size: 14, color: '#95a5a6',
+    detail: 'No visible DC practice or DC service page\nPivoting to defence/nuclear (Amentum partnership)\nOnly DC-adjacent reference: Tveiten substation (Statnett grid for Google Skien)\nEffectively conceded DC market to Norconsult + COWI'
+  }
+];
+
+const canvas = document.getElementById('chart');
+const ctx = canvas.getContext('2d');
+const tooltip = document.getElementById('tooltip');
+const W = canvas.width, H = canvas.height;
+const PAD = 60;
+
+function toPixel(x, y) {
+  return {
+    px: PAD + x * (W - 2*PAD),
+    py: H - PAD - y * (H - 2*PAD)
+  };
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+
+  // Background quadrants
+  const mx = toPixel(0.5, 0.5);
+  ctx.fillStyle = '#fef9f0'; ctx.fillRect(PAD, PAD, mx.px-PAD, mx.py-PAD);
+  ctx.fillStyle = '#f0fef4'; ctx.fillRect(mx.px, PAD, W-PAD-mx.px, mx.py-PAD);
+  ctx.fillStyle = '#f8f0fe'; ctx.fillRect(PAD, mx.py, mx.px-PAD, H-PAD-mx.py);
+  ctx.fillStyle = '#f0f4fe'; ctx.fillRect(mx.px, mx.py, W-PAD-mx.px, H-PAD-mx.py);
+
+  // Quadrant labels
+  ctx.font = '11px sans-serif'; ctx.fillStyle = '#bbb';
+  ctx.fillText('HV/EPCM strength, MEP gap', PAD+8, PAD+18);
+  ctx.fillText('Full-spectrum specialists', mx.px+8, PAD+18);
+  ctx.fillText('Local generalists', PAD+8, H-PAD-8);
+  ctx.fillText('Nordic MEP leaders', mx.px+8, H-PAD-8);
+
+  // Axes
+  ctx.strokeStyle = '#ccc'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(PAD, PAD); ctx.lineTo(PAD, H-PAD); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(PAD, H-PAD); ctx.lineTo(W-PAD, H-PAD); ctx.stroke();
+
+  // Midlines
+  ctx.setLineDash([4,4]); ctx.strokeStyle = '#ddd';
+  ctx.beginPath(); ctx.moveTo(mx.px, PAD); ctx.lineTo(mx.px, H-PAD); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(PAD, mx.py); ctx.lineTo(W-PAD, mx.py); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Axis labels
+  ctx.font = 'bold 11px sans-serif'; ctx.fillStyle = '#555';
+  ctx.textAlign = 'center';
+  ctx.fillText('← HV Grid / EPCM depth →', W/2, H-10);
+  ctx.save(); ctx.translate(14, H/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText('← MEP / Commissioning depth →', 0, 0);
+  ctx.restore();
+
+  // Firms
+  firms.forEach(f => {
+    const {px, py} = toPixel(f.x, f.y);
+    ctx.beginPath();
+    ctx.arc(px, py, f.size/2, 0, 2*Math.PI);
+    ctx.fillStyle = f.color + 'cc';
+    ctx.fill();
+    ctx.strokeStyle = f.color;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.fillStyle = '#1a1a2e';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(f.name, px, py + f.size/2 + 14);
+  });
+}
+
+draw();
+
+canvas.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  let hit = null;
+  firms.forEach(f => {
+    const {px, py} = toPixel(f.x, f.y);
+    if (Math.hypot(mx-px, my-py) < f.size/2 + 6) hit = f;
+  });
+  if (hit) {
+    tooltip.style.display = 'block';
+    tooltip.style.left = (e.clientX+14)+'px';
+    tooltip.style.top = (e.clientY-10)+'px';
+    tooltip.innerHTML = `<strong>${hit.name}</strong><br>${hit.detail.replace(/\n/g,'<br>')}`;
+    canvas.style.cursor = 'pointer';
+  } else {
+    tooltip.style.display = 'none';
+    canvas.style.cursor = 'crosshair';
+  }
+});
+canvas.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
+
+// Legend
+const legend = document.getElementById('legend');
+firms.forEach(f => {
+  const item = document.createElement('div');
+  item.className = 'legend-item';
+  item.innerHTML = `<div class="legend-dot" style="background:${f.color}"></div>${f.name}`;
+  legend.appendChild(item);
+});
+</script>
+</body>
+</html>
