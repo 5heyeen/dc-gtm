@@ -4,13 +4,12 @@
 
 ---
 
-## ⚠️ CRITICAL FINDING — REQUIRES VERIFICATION
+## ✅ ACQUISITION CONFIRMED
 
-> **Agent surfaced:** "Norconsult acquired Metier (closed December 2025, NOK 480M). Norconsult CEO cited Metier as strengthening 'project management and early-phase consulting.'" Cited source: norconsult.com/news/metier-joins-norconsult/
->
-> **If confirmed:** This fundamentally changes the competitive positioning framing. Metier is no longer an independent advisory firm competing with or complementing Norconsult — it is a Norconsult subsidiary. All analysis of "where Metier fits vs. Norconsult" must be reframed as "how Metier positions within the combined Norconsult group."
->
-> **Action required:** Verify this acquisition before using any conclusions from this research in client-facing materials.
+**Norconsult acquired Metier Group AS — closed 17 December 2025, NOK 480M EV.**
+Agreement announced 5 November 2025. Metier retains brand and operates as separate entity within Norconsult group (250 employees, NOK 494M revenue, NOK 60M EBITA at deal close).
+See subtask 07 for full GTM implications.
+Sources: investor.norconsult.com/stock-exchange-and-press-releases/norconsult-to-acquire-metier-group-as/ | norconsult.com/news/metier-joins-norconsult/
 
 ---
 
