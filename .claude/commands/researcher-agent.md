@@ -29,7 +29,7 @@ At every stage transition, print a **progress checklist** so the user always kno
 ─────────────────────────────────────────
 ```
 
-Legend: ✅ done  🔄 in progress  ⬜ not started  ❌ failed
+Legend: ✅ done  🔄 in progress  ⬜ not started  ❌ failed  ♻️ reused from Document Library
 
 **Rules:**
 - Print the checklist **once per stage completion** and **once per subtask completion** during Stage 3.
@@ -85,7 +85,44 @@ If the scope is fewer than ~20 words or could mean multiple very different thing
 
 Store the matched project page URL for later use by `/save-research`.
 
-### 1c. Create Workspace
+### 1c. Scan the Document Library for Existing Research
+
+Before scoping the work, check what has already been researched for this project. This avoids duplicating effort and surfaces existing findings that should inform the breakdown.
+
+1. Fetch the matched project page to find the "3. Data & Research" subpage.
+2. Fetch "3. Data & Research" to find the Document Library database and extract its `data-source-url` (`collection://...`).
+3. Query the Document Library using `mcp__claude_ai_Notion__notion-query-database-view` on that data source URL. Retrieve all entries (no filter).
+4. Review the entry titles and topics against the research scope. Identify:
+   - **Directly relevant** — entries whose title or topic closely matches the current scope (read their content with `mcp__claude_ai_Notion__notion-fetch`)
+   - **Partially relevant** — entries that cover adjacent topics useful as context (note title + topic only; read on demand)
+   - **Not relevant** — entries unrelated to the scope (ignore)
+5. For each directly relevant entry, fetch its full content and extract key findings.
+6. Save a brief **prior research summary** to `workspace\00-prior-research.md`:
+
+```markdown
+# Prior Research in Document Library
+
+**Project:** <project name>
+**Scanned:** <today's date>
+
+## Directly Relevant (read in full)
+- **<Entry title>** (Topic: <topic>) — <2-3 sentence summary of key findings>
+- ...
+
+## Partially Relevant (title + topic only)
+- **<Entry title>** (Topic: <topic>)
+- ...
+
+## Coverage gaps (what this research scope still needs to address)
+- <gap 1>
+- <gap 2>
+```
+
+If the Document Library is empty or inaccessible, note this and proceed without it.
+
+Tell the user what was found: `"I found N existing entries in the Document Library. M are directly relevant to this scope. Key prior findings: <2-3 bullet summary>. I'll use these to avoid duplicating work in the breakdown."`
+
+### 1d. Create Workspace
 
 - Derive `<project-slug>` from the matched project name (kebab-case, lowercase). If standalone: use `standalone`
 - Derive `<scope-slug>` from the research scope (kebab-case, lowercase, max 8 words)
@@ -98,9 +135,10 @@ Store the matched project page URL for later use by `/save-research`.
 **Scope:** <the confirmed research scope>
 **Project:** <matched project name or "Standalone">
 **Date:** <today's date>
+**Prior research:** <N directly relevant entries found in Document Library — see 00-prior-research.md>
 ```
 
-After saving the scope file, **print the progress checklist** (Stage 1 ✅, all others ⬜).
+After saving the scope file (and `00-prior-research.md` from step 1c), **print the progress checklist** (Stage 1 ✅, all others ⬜).
 
 ---
 
@@ -109,10 +147,18 @@ After saving the scope file, **print the progress checklist** (Stage 1 ✅, all 
 Break the research scope into structured subtasks. This happens **before** any prompt chains are generated — the breakdown defines the research structure, and prompt chains are created per subtask in Stage 3.
 
 1. Tell the user: "I'm now breaking down the research scope into subtasks. When `/decompose-task` asks where to save the markdown file, use: `<workspace-path>`"
-2. Invoke `/decompose-task` with the scope text as the argument
+2. Invoke `/decompose-task` with the scope text as the argument, **passing the prior research summary from `00-prior-research.md` as additional context** so the decomposer knows what is already covered.
 3. After `/decompose-task` completes, ensure the breakdown is saved as `workspace\01-breakdown.md`
 
-### 2a. Classify Subtask Dependencies
+### 2a. Classify Subtask Dependencies and Mark Already-Covered Topics
+
+After the breakdown is produced, classify each subtask as `[independent]` or `[sequential]`, and additionally tag any subtask where the Document Library already contains directly relevant content:
+
+- **`[covered]`** — The Document Library already has a directly relevant entry for this subtask. Mark it as covered and **do not re-research it** in Stage 3. Instead, in Stage 3, read the existing Notion entry and incorporate its findings into the relevant research file directly.
+- **`[partial]`** — The Document Library has related but incomplete coverage. Keep the subtask but narrow its scope to fill only the gaps. Note the existing entry in the subtask description.
+- **`[independent]`** or **`[sequential]`** — No prior coverage. Research from scratch as normal.
+
+This prevents duplicating work the team has already done.
 
 After the breakdown is produced, classify each subtask as `[independent]` or `[sequential]`:
 
@@ -132,13 +178,13 @@ Show the subtasks with their dependency tags and ask using `AskUserQuestion`:
 
 "Here are the research subtasks I've identified:
 
-1. `[independent]` <subtask 1>
+1. `[covered]` <subtask 1> — *already in Document Library: "<entry title>"*
 2. `[independent]` <subtask 2>
-3. `[independent]` <subtask 3>
-4. `[sequential]` <subtask 4> (depends on 1–3)
+3. `[partial]` <subtask 3> — *partial coverage in "<entry title>"; will fill gaps only*
+4. `[sequential]` <subtask 4> (depends on 2–3)
 ...
 
-Sequential subtasks wait for their dependencies. By default, even independent subtasks run one at a time to conserve tokens.
+`[covered]` subtasks will reuse existing Notion entries instead of re-researching. Sequential subtasks wait for their dependencies. By default, even independent subtasks run one at a time to conserve tokens.
 
 Does this look right? You can approve, change dependency tags, add tasks, remove tasks, or modify them."
 
@@ -188,6 +234,15 @@ Process waves in order. After each wave completes fully (all subtasks saved to d
 
 Process each subtask in the wave sequentially, regardless of whether it is `[independent]` or `[sequential]`. This is the most token-conservative approach:
 
+**For `[covered]` subtasks** — do not invoke `/create-prompts` or `/run-prompt-chain`. Instead:
+1. Derive `<task-slug>`, create the task directory
+2. Fetch the existing Notion entry from the Document Library (URL noted in the breakdown)
+3. Save its content to `workspace\tasks\<nn>-<task-slug>\research.md` with a header: `> ♻️ Reused from Document Library: "<entry title>"`
+4. Mark the subtask ✅ in the checklist immediately — no Notion save needed (already there)
+
+**For `[partial]` subtasks** — invoke the normal chain but pass the existing entry's content as context so prompts address only the gaps.
+
+**For `[independent]` and `[sequential]` subtasks:**
 1. Derive `<task-slug>`, create the task directory
 2. Invoke `/create-prompts` with the subtask description as argument
 3. Save the chain to `workspace\tasks\<nn>-<task-slug>\prompt-chain.md`
