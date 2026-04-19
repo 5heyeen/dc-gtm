@@ -41,25 +41,25 @@ This agent uses **WebSearch** and **WebFetch** for research. All research is don
 
 ## Workflow
 
-The agent runs 6 sequential research phases. Each phase saves its output to `research/` inside the operator folder. Run all phases in order, or run a specific phase.
+The agent runs 6 sequential research phases. Each phase saves its output directly inside the operator folder (`projects/operators/<name>/`). Run all phases in order, or run a specific phase.
 
 ### Phase 1: Company Research
-Read `templates/prompts/01-company-research.md` and execute. Saves to `research/01-company.md`.
+Read `templates/prompts/01-company-research.md` and execute. Saves to `01-company.md`.
 
 ### Phase 2: Job Ads & Hiring Analysis
-Read `templates/prompts/02-job-ads-analysis.md` and execute. Saves to `research/02-hiring.md`.
+Read `templates/prompts/02-job-ads-analysis.md` and execute. Saves to `02-hiring.md`.
 
 ### Phase 3: News, Ownership & Funding Analysis
-Read `templates/prompts/03-news-and-ownership.md` and execute. This is a critical phase — it covers ownership structure, **investor identity, funding rounds, capital structure, investor requirements and constraints** (IRR targets, exit horizons, milestone gates, ESG mandates, reporting burden, governance provisions). Saves to `research/03-news-ownership.md`.
+Read `templates/prompts/03-news-and-ownership.md` and execute. This is a critical phase — it covers ownership structure, **investor identity, funding rounds, capital structure, investor requirements and constraints** (IRR targets, exit horizons, milestone gates, ESG mandates, reporting burden, governance provisions). Saves to `03-news-ownership.md`.
 
 ### Phase 4: Competitive Landscape
-Read `templates/prompts/04-competitive-landscape.md` and execute. Saves to `research/04-comparables.md`.
+Read `templates/prompts/04-competitive-landscape.md` and execute. Saves to `04-comparables.md`.
 
 ### Phase 5: Pain Point Mapping (no web research — synthesis only)
-Read `templates/prompts/05-pain-point-mapping.md` and execute. Also read `projects/dc-gtm/dc-services/dc_services_metier.md` and `projects/dc-gtm/dc-services/dc_services_metier_pain_point.md`. **Pay special attention to the "Funding-Driven Pain Points" section** in the pain-point mapping — investor pressure, milestone-gated capital, ESG mandates, and reporting burden are often the most urgent pain points for PE-backed and fund-backed operators. Saves to `research/05-pain-points.md`.
+Read `templates/prompts/05-pain-point-mapping.md` and execute. Also read `projects/dc-gtm/dc-services/dc_services_metier.md` and `projects/dc-gtm/dc-services/dc_services_metier_pain_point.md`. **Pay special attention to the "Funding-Driven Pain Points" section** in the pain-point mapping — investor pressure, milestone-gated capital, ESG mandates, and reporting burden are often the most urgent pain points for PE-backed and fund-backed operators. Saves to `05-pain-points.md`.
 
 ### Phase 6: Meeting Brief Generation (no web research — synthesis only)
-Read `templates/prompts/06-brief-generation.md` and execute. **Ensure the "Funding & Investor Context" section (Section 3) is fully populated** — this is often the most actionable section for Metier's pitch. Saves to `research/brief.md`.
+Read `templates/prompts/06-brief-generation.md` and execute. **Ensure the "Funding & Investor Context" section (Section 3) is fully populated** — this is often the most actionable section for Metier's pitch. Saves to `brief.md`.
 
 ## Commands
 
