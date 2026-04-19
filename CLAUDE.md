@@ -18,6 +18,20 @@ This agent uses **WebSearch** and **WebFetch** for research. All research is don
 - Investor/PE firm websites and portfolio pages
 - Project finance and funding news
 
+## Repository Structure — `projects/dc-gtm/`
+
+| Folder | Contents |
+|--------|----------|
+| `dc-consultants/` | Advisory firm profiles (DLE, Grezya, MMCD) and Norconsult research |
+| `dc-csa/` | _(planned)_ Civil, structural & architectural contractor research |
+| `dc-mep/` | _(planned)_ MEP (mechanical, electrical, plumbing) contractor research |
+| `dc-operators/` | Customer personas and operator-facing pain-point mapping |
+| `dc-services/` | Metier's service catalog, DC design research, and design-by-end-user analysis |
+| `files-received/` | External files and documents received from clients/partners |
+| `investors/` | Investor landscape research and investor-facing value proposition |
+| `strategy-analysis/` | Go-to-market strategy and positioning analysis |
+| `tech-trends/` | Technology trend research relevant to DC market |
+
 ## Key Reference Files
 
 - `projects/dc-gtm/dc-services/dc_services_metier.md` — Metier's service catalog with DC-specific framing (8 services)
@@ -73,7 +87,7 @@ When any of the following files are modified, **always sync the changes back to 
 
 | Local File | Notion Target |
 |------------|---------------|
-| `projects/dc-gtm/customer-personas/dc-customer-personas.md` | [DC Customer Personas & Value Props](https://www.notion.so/32d64f448283806d8b8cf32572c4be43) |
+| `projects/dc-gtm/dc-operators/dc-customer-personas.md` | [DC Customer Personas & Value Props](https://www.notion.so/32d64f448283806d8b8cf32572c4be43) |
 | `projects/dc-gtm/dc-services/dc_services_all.md` | [DC Services](https://www.notion.so/964d4138914342c3a0ba78de77f5a030) |
 
 To sync: after editing the local file, use the Notion MCP tools (`mcp__*__notion-update-page` or `mcp__*__notion-create-pages`) to push the updated content to the corresponding Notion page/database.
