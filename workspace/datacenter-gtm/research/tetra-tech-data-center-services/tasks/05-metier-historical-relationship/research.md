@@ -9,59 +9,53 @@
 ## Full Ownership Timeline
 
 **1976 — Metier AS founded**
-Metier is established in Norway as a project management and project management training organisation. Over the following decades it becomes one of the best-known PM consultancies in Norway, developing proprietary methodologies and training programmes used across public and private sector clients.
+Metier was established in Norway as a project management and training firm. Over subsequent decades it built a strong reputation in Norwegian project management consultancy, developing proprietary methodologies and training programmes. It was not an engineering or construction firm — its core product was PM advisory and capability building.
 
-**November 2013 — RPS acquires OEC Group**
-RPS Group plc, a UK-listed professional services firm, acquires OEC Group in Norway, establishing its first Norwegian office network in the energy and environmental sectors. This creates the platform onto which Metier will later be added.
+**November 2013 — RPS Group acquires OEC Group (Norway)**
+UK-listed professional services firm RPS Group made its first Norwegian acquisition by purchasing the OEC Group, establishing an initial footprint in Norwegian energy and environmental consulting. This gave RPS a base from which to pursue further Norwegian growth.
 
 **April 2015 — RPS acquires Metier Holding AS**
-RPS acquires Metier Holding AS for NOK 267M (~£22.3M). At acquisition, Metier has 160 employees across offices in Oslo, Stavanger, Trondheim, and Alesund. The ownership structure at sale is approximately 52% held by external investors and 48% distributed among 64 Metier staff — indicating significant employee ownership and a management-aligned culture. In its press release, RPS describes the combined RPS+Metier entity as "the leading project management organisation in Norway."
+RPS acquired Metier Holding AS for NOK 267M (~£22.3M). At acquisition, Metier had approximately 160 employees across offices in Oslo, Stavanger, Trondheim, and Alesund. Ownership at the point of sale was approximately 52% held by external investors and 48% by 64 Metier staff members. Following the acquisition, RPS positioned the combined RPS Norway + Metier entity as "the leading project management organisation in Norway," emphasising complementary capabilities in project management, energy, and environmental consulting. Metier continued operating under its own brand.
 
-**January 2023 — Tetra Tech acquires RPS Group plc**
-Tetra Tech Inc. completes its acquisition of RPS Group plc for $691M. Metier — by now grown to approximately 250 employees and NOK ~494M in annual revenue — becomes part of Tetra Tech's global portfolio, held through the legal entity "Tetra Tech RPS Energy Limited." Tetra Tech is a $5.4B US-listed technical engineering and environmental firm; Metier continues to operate under its own brand name.
+**January 2023 — Tetra Tech completes acquisition of RPS Group plc**
+Tetra Tech acquired RPS Group plc for $691M, bringing Metier into the Tetra Tech portfolio through the "Tetra Tech RPS Energy Limited" holding entity. By this point, Metier had grown to approximately 250 employees with revenues of approximately NOK 494M. Metier continued to operate as a standalone brand; there is no public evidence of operational integration with Tetra Tech's engineering practices or joint go-to-market activity.
 
-**November 2025 — Norconsult announces acquisition of Metier**
-Norconsult ASA, Norway's largest engineering consultancy, announces an agreement to acquire 100% of Metier Group AS from Tetra Tech RPS Energy Limited. Enterprise value is set at NOK 480M.
+**November 2025 — Norconsult ASA announces Metier acquisition**
+Norconsult ASA announced a binding agreement to acquire 100% of Metier Group AS from Tetra Tech RPS Energy Limited at an enterprise value of NOK 480M.
 
 **December 2025 — Transaction closes**
-The acquisition closes with a final payment of NOK 475M. Metier is now 100% owned by Norconsult ASA. Tetra Tech has no remaining ownership stake or disclosed contractual relationship with Metier.
-
----
+The acquisition closed with a final payment of NOK 475M. Metier is now wholly owned by Norconsult ASA, fully separated from the Tetra Tech group.
 
 ## Why Tetra Tech Sold Metier
 
-The divestiture follows a clear strategic logic. Tetra Tech is a technical engineering firm — its strengths and market identity are in environmental remediation, water infrastructure, international development, and mission-critical engineering. A project management consultancy like Metier, however well-regarded in its domestic Norwegian market, sits outside Tetra Tech's core service architecture.
+The divestiture follows a clear portfolio logic. Tetra Tech is a technical engineering firm — its core identity is environmental science, infrastructure engineering, and mission-critical design. Project management consultancy is adjacent but not central to that identity. Retaining a standalone PM advisory business in Norway, generating NOK 494M in revenue within a $5.4B global engineering firm, required strategic attention that was difficult to justify given the size and strategic fit of the asset.
 
-Metier's NOK ~494M revenue, while meaningful at the Norwegian scale, represents a small fraction of Tetra Tech's $5.4B group revenue. The management attention required to maintain and grow a Norwegian PM consultancy, embedded in a very different professional culture and language environment, was unlikely to justify the return relative to deploying capital and leadership focus elsewhere.
+The sale to Norconsult is a natural fit from the buyer's perspective: Norconsult is a Norwegian engineering firm for which PM advisory capability is a genuine complement to its technical engineering services, and Norwegian market presence is core to its identity rather than peripheral.
 
-The buyer, Norconsult, provides a more natural strategic home. Norconsult is an engineering firm that delivers technical projects in Norway and the Nordics — PM consultancy capability directly complements its technical delivery model. The acquisition was strategically coherent for Norconsult in a way that Metier's continued ownership was not for Tetra Tech.
-
----
+There is no public indication of operational or financial distress motivating the sale. It appears to be a standard portfolio rationalisation — retain engineering, divest PM consultancy.
 
 ## Nature of the Prior Relationship
 
-A critical observation for any alliance analysis: Tetra Tech never built a relationship with Metier from scratch. The relationship was inherited as an artefact of the RPS acquisition. Tetra Tech acquired RPS for its global environmental, energy, and property engineering capabilities — Metier came along as part of RPS's Norwegian subsidiary portfolio.
+A key finding is that Tetra Tech never organically built a relationship with Metier. The relationship was entirely inherited through the RPS acquisition in January 2023. Metier had already been a part of RPS for nearly eight years before Tetra Tech appeared in the ownership chain.
 
-During the approximately two years of shared ownership (January 2023 to December 2025), the evidence suggests limited operational integration. Metier continued to operate under its own brand, with its own leadership and client relationships. No joint go-to-market initiatives, shared project references, or published collaboration between Tetra Tech and Metier have been identified in any public source. There is no indication that Tetra Tech attempted to cross-sell Metier's PM services into its engineering projects, or vice versa.
+During the approximately two years of shared ownership (January 2023 to December 2025), no public evidence of operational integration, joint project delivery, co-branded go-to-market activity, or shared data center references between Tetra Tech and Metier has been found. Metier operated under its own brand and leadership throughout.
 
----
+No joint DC projects, shared client references, or published collaboration between Tetra Tech engineering teams and Metier have been identified in any public source.
 
-## Implications for a Potential Alliance
+## Alliance Implications
 
-The clean December 2025 exit means there are no residual contractual ties between Tetra Tech and Metier — no non-compete, no preferred supplier agreement, no revenue-sharing arrangement has been publicly disclosed. The divestiture was structured as a standard M&A sale with no apparent commercial strings attached.
+The December 2025 close ended all residual contractual and commercial ties between Tetra Tech and Metier. There is no publicly indicated non-compete, preferred supplier arrangement, or ongoing commercial relationship of any kind.
 
-The historical ownership connection creates a natural conversation opener at the executive level: Metier and Tetra Tech leaders can reference shared history without needing to manufacture a relationship. However, this history does not create any preferential commercial position — Norconsult's consent would be required for any exclusive arrangement, and Metier's client-facing team now reports to Norconsult leadership.
+No ill will is apparent — this was a standard divestiture with a rational buyer, at a price (NOK 475M) representing a meaningful premium over the NOK 267M RPS paid in 2015. Both parties appear to have exited cleanly.
 
-There is no evidence of ill will. The transaction was announced and closed in a standard timeframe, at a price (NOK 475M) that represented solid value relative to the NOK 267M RPS paid in 2015. Both sides appear to have exited cleanly.
-
-**Confidence level:** High. The ownership timeline is well-documented through public stock exchange announcements and press releases. The inference about limited operational integration (2023–2025) is based on the absence of any public evidence of joint activity — absence of evidence is not conclusive, but it is consistent with the strategic logic of a non-core holding being managed for eventual sale.
+Any commercial arrangement between Tetra Tech and the current Metier (now under Norconsult) would require Norconsult's consent for anything exclusive. However, the shared ownership history does provide a natural and genuine conversation opener at the executive level — Tetra Tech and Metier leaders can reference the shared ownership period, common clients, and mutual understanding of each other's capabilities as a starting point for a commercial discussion, even if it creates no preferential legal or commercial position.
 
 ---
 
 ## Sources
 
-- [RPS Acquires Metier Holding AS](https://fusiondiginet.com/2015/04/30/rps-group-acquires-norwegian-consultancy-metier-for-around-22-3m/)
-- [RPS Expands Norway Capabilities](https://www.rpsgroup.com/about-us/news/rps-expands-its-capabilities-in-norway/)
-- [Norconsult to Acquire Metier Group AS](https://investor.norconsult.com/stock-exchange-and-press-releases/norconsult-to-acquire-metier-group-as/)
-- [Norconsult Closing of Metier Acquisition](https://investor.norconsult.com/stock-exchange-and-press-releases/norconsult-closing-of-acquisition-of-metier-group-as/)
-- [Tetra Tech Completes Acquisition of RPS Group](https://investor.tetratech.com/news/news-details/2023/Tetra-Tech-Completes-Acquisition-of-Global-Professional-Services-Firm-RPS-Group/default.aspx)
+- [RPS acquires Metier Holding AS](https://fusiondiginet.com/2015/04/30/rps-group-acquires-norwegian-consultancy-metier-for-around-22-3m/)
+- [RPS expands Norway capabilities](https://www.rpsgroup.com/about-us/news/rps-expands-its-capabilities-in-norway/)
+- [Norconsult to acquire Metier Group AS](https://investor.norconsult.com/stock-exchange-and-press-releases/norconsult-to-acquire-metier-group-as/)
+- [Norconsult closing of Metier acquisition](https://investor.norconsult.com/stock-exchange-and-press-releases/norconsult-closing-of-acquisition-of-metier-group-as/)
+- [Tetra Tech RPS acquisition close](https://investor.tetratech.com/news/news-details/2023/Tetra-Tech-Completes-Acquisition-of-Global-Professional-Services-Firm-RPS-Group/default.aspx)
