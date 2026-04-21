@@ -11,7 +11,12 @@
 - [x] Stage 2: Breakdown approved (8 subtasks, 3 waves) — see 01-breakdown.md
 
 ## Remaining
-- [ ] Stage 3: Per-subtask research — **BLOCKED: API rate limit. Resets 8pm UTC 2026-04-20**
+- [x] Stage 3: Per-subtask research — all 8 tasks complete (Tasks 01–08)
+- [ ] Stage 4: Notion save verification checkpoint (Notion unavailable — skip)
+- [ ] Stage 5: Synthesis → invoke /synthesise-research
+- [ ] Stage 5.5: Citation Audit → produce citation-audit.md
+- [ ] Stage 6: Presentation → invoke /select-diagram + /executive-brief
+- [ ] Stage 7: Final report
 - [ ] Stage 3: Per-subtask research (subtask list TBD)
 - [ ] Stage 4: Notion save verification checkpoint (Notion unavailable — skip)
 - [ ] Stage 5: Synthesis → invoke /synthesise-research
