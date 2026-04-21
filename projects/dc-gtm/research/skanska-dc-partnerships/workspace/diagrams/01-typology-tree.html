@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DC Alliance Typology Map</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f4f8; padding: 24px; color: #1a202c; }
+    h1 { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
+    .subtitle { font-size: 0.875rem; color: #64748b; margin-bottom: 20px; }
+    #chart-wrap { background: white; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.12); padding: 20px 16px; overflow-x: auto; }
+    #tooltip {
+      position: fixed; background: #1e293b; color: #f1f5f9;
+      padding: 10px 14px; border-radius: 8px; font-size: 0.78rem;
+      max-width: 300px; line-height: 1.5; pointer-events: none;
+      opacity: 0; transition: opacity 0.12s; z-index: 999;
+    }
+    #tooltip strong { color: #fff; display: block; margin-bottom: 4px; }
+    .legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 16px; }
+    .legend-item { display: flex; align-items: center; gap: 7px; font-size: 0.8rem; color: #374151; }
+    .legend-swatch { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+  <h1>DC Alliance Typology Map</h1>
+  <p class="subtitle">Five structural partnership models used by leading data center GCs and programme management firms. Hover over any node for detail.</p>
+  <div id="chart-wrap"><svg id="svg"></svg></div>
+  <div class="legend" id="legend"></div>
+  <div id="tooltip"></div>
+
+  <script>
+    const typologies = [
+      {
+        id: "A", color: "#3B82F6",
+        label: "A: Repeat-Client\nFramework",
+        desc: "Implicit MSA. Sequential large contracts with the same undisclosed client — operationally identical to a master service agreement with call-off orders. Most common model across GCs.",
+        leaves: [
+          { label: "Skanska US\n(7 contracts, 2024–26)", desc: "Seven contracts $90M–$263M to undisclosed clients. Skanska Advanced Technology (SAT) acts as single point of contact for all advanced tech customers nationwide." },
+          { label: "Turner + Meta /\nVantage Ohio", desc: "$800M+ Meta Indiana; $2B+ Vantage Ohio. Repeat mandates across multiple hyperscaler sites." },
+          { label: "DPR + Meta\n(multi-site)", desc: "Fort Worth TX, Richland Parish LA, Abilene TX — repeat mandates using DPR's self-perform model for critical scopes." }
+        ]
+      },
+      {
+        id: "B", color: "#8B5CF6",
+        label: "B: Mega-Project\nConsortium JV",
+        desc: "Formal joint venture for projects above ~$5B. Project-specific legal entity dissolved after delivery. Used when no single GC has sufficient capacity, risk appetite, or footprint.",
+        leaves: [
+          { label: "Turner + DPR +\nMortenson", desc: "$10B Meta Louisiana; 5,000 peak workers; 4M sqft; formal JV structure; completion ~2030. Largest DC JV found in research." },
+          { label: "Turner + Wohlsen\n(CoreWeave PA $6B)", desc: "$6B CoreWeave Pennsylvania campus. Two-partner JV; Turner leads; Wohlsen contributes specialist scope." }
+        ]
+      },
+      {
+        id: "C", color: "#F59E0B",
+        label: "C: Technology-\nStandard Alliance",
+        desc: "Named, publicly branded partnership. GC or PM firm co-develops a delivery standard or blueprint with a technology partner. Globally replicable product.",
+        leaves: [
+          { label: "Bechtel + NVIDIA\n'AI Factory'", desc: "Most significant named alliance found. Bechtel modularises NVIDIA's AI Factory (Omniverse Blueprint) for gigawatt-scale AI DC construction globally. 'First revenue token' as primary IRR metric." },
+          { label: "AECOM +\nProject Frog", desc: "'Rapid Deployment Team'. AECOM wraps design and CM around Project Frog's Converge modular DC kit (1MW+). Published alliance." },
+          { label: "Hochtief +\nThomas-Krenn (Yorizon)", desc: "Yorizon cloud JV. Hochtief integrates cloud operations (via Thomas-Krenn.AG) alongside construction and long-term asset management." }
+        ]
+      },
+      {
+        id: "D", color: "#10B981",
+        label: "D: Investor-GC\nOperating Partnership",
+        desc: "GC holds equity in the DC asset alongside an infrastructure investor and is responsible for build AND ongoing operations. Only model where GC bears operational risk.",
+        leaves: [
+          { label: "Hochtief + Palladio\n(YEXIO, 15 sites)", desc: "EUR 6.2B backlog; groundbreaking Mar 2024; scaled to 15 sites by May 2025; UK/Ireland expansion 2025. Only European GC to co-own, brand, and operate DC assets. Palladio Partners provides capital and site network." }
+        ]
+      },
+      {
+        id: "E", color: "#EF4444",
+        label: "E: EPCM\nGovernance Hub",
+        desc: "PM/EPCM firm is the governance nerve-centre connecting all counterparties: operator, lenders, utilities, tech vendors, contractors. Financial institutions explicitly named as counterparties. Creates 'repeatable framework' credential.",
+        leaves: [
+          { label: "Jacobs + Hut 8\n+ JPM + Goldman", desc: "245MW River Bend Louisiana; $7B lease; $10B campus. J.P. Morgan and Goldman Sachs named as governance counterparties. 'Institutional-grade execution model designed to de-risk project delivery.'" },
+          { label: "Turner & Townsend\nPMO (global)", desc: "500+ DC projects in 35+ countries. Proprietary DCCI cost benchmark. Full lifecycle owner's rep at du/UAE. 'Curating and building local skillsets on the ground for the long term.'" },
+          { label: "AECOM\nowner's rep", desc: "'Technical, financial and regulatory risk allocated across parties over the full life of the asset.' Named client: Nostrum DC Spain (€1.9B, 500MW, Dec 2025)." }
+        ]
+      }
+    ];
+
+    // Layout constants
+    const leafH = 60, topPad = 36, leftPad = 24;
+    const col1x = 92, col2x = 330, col3x = 710;
+    const nodeW2 = 160, nodeH2 = 52;
+    const nodeW3 = 210, nodeH3 = 46;
+
+    // Assign y to leaves
+    let li = 0;
+    typologies.forEach(t => {
+      t.leaves.forEach(l => { l.y = topPad + li * leafH + leafH / 2; li++; });
+      t.y = t.leaves.reduce((s, l) => s + l.y, 0) / t.leaves.length;
+    });
+
+    const svgH = topPad * 2 + li * leafH;
+    const svgW = 960;
+
+    const svg = document.getElementById('svg');
+    svg.setAttribute('width', svgW);
+    svg.setAttribute('height', svgH);
+    svg.setAttribute('viewBox', `0 0 ${svgW} ${svgH}`);
+
+    const tip = document.getElementById('tooltip');
+
+    function showTip(e, html) { tip.innerHTML = html; tip.style.opacity = '1'; positionTip(e); }
+    function positionTip(e) {
+      let x = e.clientX + 16, y = e.clientY - 12;
+      if (x + 310 > window.innerWidth) x = e.clientX - 318;
+      if (y + 120 > window.innerHeight) y = e.clientY - 130;
+      tip.style.left = x + 'px'; tip.style.top = y + 'px';
+    }
+    function hideTip() { tip.style.opacity = '0'; }
+
+    function ns(tag, attrs) {
+      const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+      for (const [k, v] of Object.entries(attrs || {})) e.setAttribute(k, v);
+      return e;
+    }
+
+    function drawText(svg, text, cx, cy, opts) {
+      const lines = text.split('\n');
+      const g = ns('g');
+      const lh = opts.lh || 14;
+      lines.forEach((line, i) => {
+        const t = ns('text', {
+          x: cx, y: cy + (i - (lines.length - 1) / 2) * lh,
+          'text-anchor': 'middle', 'dominant-baseline': 'central',
+          'font-size': opts.size || 12, 'font-weight': opts.weight || 'normal',
+          fill: opts.fill || '#1a202c', 'pointer-events': 'none',
+          'font-family': "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        });
+        t.textContent = line;
+        g.appendChild(t);
+      });
+      svg.appendChild(g);
+    }
+
+    function bezier(x1, y1, x2, y2) {
+      const mx = (x1 + x2) / 2;
+      return `M ${x1} ${y1} C ${mx} ${y1} ${mx} ${y2} ${x2} ${y2}`;
+    }
+
+    // Defs: drop shadow
+    const defs = ns('defs');
+    defs.innerHTML = `<filter id="sh" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity="0.15"/>
+    </filter>`;
+    svg.appendChild(defs);
+
+    const rootY = svgH / 2;
+
+    // Root node
+    const rootR = 38;
+    const rootG = ns('g', { cursor: 'pointer' });
+    rootG.appendChild(ns('circle', { cx: col1x, cy: rootY, r: rootR, fill: '#1e293b', filter: 'url(#sh)' }));
+    rootG.addEventListener('mouseenter', e => showTip(e, '<strong>DC Alliance Typologies</strong><br>Five structural models used by leading GCs and PM firms globally in data center construction and governance.'));
+    rootG.addEventListener('mousemove', positionTip);
+    rootG.addEventListener('mouseleave', hideTip);
+    svg.appendChild(rootG);
+    drawText(svg, 'DC\nAlliances', col1x, rootY, { fill: 'white', size: 11, weight: '700', lh: 15 });
+
+    // Paths and nodes (draw paths first so they appear behind nodes)
+    const pathLayer = ns('g');
+    svg.appendChild(pathLayer);
+    const nodeLayer = ns('g');
+    svg.appendChild(nodeLayer);
+
+    typologies.forEach(t => {
+      // Root → typology bezier
+      const p1 = ns('path', {
+        d: bezier(col1x + rootR, rootY, col2x - nodeW2 / 2, t.y),
+        fill: 'none', stroke: t.color, 'stroke-width': '2', opacity: '0.5'
+      });
+      pathLayer.appendChild(p1);
+
+      // Typology node
+      const tg = ns('g', { cursor: 'pointer' });
+      tg.appendChild(ns('rect', {
+        x: col2x - nodeW2 / 2, y: t.y - nodeH2 / 2,
+        width: nodeW2, height: nodeH2, rx: '8',
+        fill: t.color, filter: 'url(#sh)'
+      }));
+      tg.addEventListener('mouseenter', e => showTip(e, `<strong>${t.id}: ${t.label.replace('\n', ' ')}</strong><br>${t.desc}`));
+      tg.addEventListener('mousemove', positionTip);
+      tg.addEventListener('mouseleave', hideTip);
+      nodeLayer.appendChild(tg);
+      drawText(svg, t.label, col2x, t.y, { fill: 'white', size: 11, weight: '600', lh: 14 });
+
+      // Leaves
+      t.leaves.forEach(l => {
+        const p2 = ns('path', {
+          d: bezier(col2x + nodeW2 / 2, t.y, col3x - nodeW3 / 2, l.y),
+          fill: 'none', stroke: t.color, 'stroke-width': '1.5', opacity: '0.35'
+        });
+        pathLayer.appendChild(p2);
+
+        const lg = ns('g', { cursor: 'pointer' });
+        lg.appendChild(ns('rect', {
+          x: col3x - nodeW3 / 2, y: l.y - nodeH3 / 2,
+          width: nodeW3, height: nodeH3, rx: '6',
+          fill: t.color + '20', stroke: t.color, 'stroke-width': '1.5'
+        }));
+        lg.addEventListener('mouseenter', e => showTip(e, `<strong>${l.label.replace('\n', ' ')}</strong><br>${l.desc}`));
+        lg.addEventListener('mousemove', positionTip);
+        lg.addEventListener('mouseleave', hideTip);
+        nodeLayer.appendChild(lg);
+        drawText(svg, l.label, col3x, l.y, { fill: '#1a202c', size: 11, weight: '500', lh: 13 });
+      });
+    });
+
+    // Column headers
+    ['Alliance Typologies\n(5 models)', 'Partnership Examples\n(hover for detail)']
+      .forEach((label, i) => {
+        const x = [col2x, col3x][i];
+        drawText(svg, label, x, 14, { fill: '#94a3b8', size: 10, weight: '600', lh: 12 });
+      });
+
+    // Legend
+    const legendEl = document.getElementById('legend');
+    typologies.forEach(t => {
+      const item = document.createElement('div');
+      item.className = 'legend-item';
+      item.innerHTML = `<div class="legend-swatch" style="background:${t.color}"></div><span>${t.id}: ${t.label.replace('\n', ' ')}</span>`;
+      legendEl.appendChild(item);
+    });
+  </script>
+</body>
+</html>
