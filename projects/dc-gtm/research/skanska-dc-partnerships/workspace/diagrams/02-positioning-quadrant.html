@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DC Governance: Competitive Positioning Map</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f4f8; padding: 24px; color: #1a202c; }
+    h1 { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
+    .subtitle { font-size: 0.875rem; color: #64748b; margin-bottom: 20px; }
+    #chart-wrap { background: white; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.12); padding: 20px; overflow-x: auto; }
+    #tooltip {
+      position: fixed; background: #1e293b; color: #f1f5f9;
+      padding: 10px 14px; border-radius: 8px; font-size: 0.78rem;
+      max-width: 320px; line-height: 1.5; pointer-events: none;
+      opacity: 0; transition: opacity 0.12s; z-index: 999;
+    }
+    #tooltip strong { color: #fff; display: block; margin-bottom: 4px; }
+    .legend { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 16px; align-items: center; }
+    .legend-item { display: flex; align-items: center; gap: 7px; font-size: 0.8rem; color: #374151; }
+    .legend-dot { width: 13px; height: 13px; border-radius: 50%; flex-shrink: 0; }
+    .legend-star { font-size: 1rem; line-height: 1; }
+  </style>
+</head>
+<body>
+  <h1>DC Governance: Competitive Positioning Map</h1>
+  <p class="subtitle">X axis: geographic scope (Nordic/local → global). Y axis: governance sophistication (basic construction management → investor-grade). Hover over any firm for detail. Metier's target whitespace is marked with a star.</p>
+  <div id="chart-wrap"><svg id="svg"></svg></div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#EF4444"></div><span>Global PM / EPCM firms</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:#3B82F6"></div><span>Global GC (US-led)</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:#8B5CF6"></div><span>European GC</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:#64748b"></div><span>Skanska (Nordic GC)</span></div>
+    <div class="legend-item"><span class="legend-star">⭐</span><span>Metier target position (whitespace)</span></div>
+  </div>
+  <div id="tooltip"></div>
+
+  <script>
+    const firms = [
+      {
+        name: "Jacobs", x: 0.88, y: 0.93, r: 10, color: "#EF4444", type: "pm",
+        desc: "EPCM lead at Hut 8 River Bend (245MW, $7B, Louisiana). J.P. Morgan + Goldman Sachs named as governance counterparties. 'Institutional-grade execution model.' $22.69B backlog Q3 FY2025 (+14.3% YoY).",
+        typology: "Typology E — EPCM Governance Hub"
+      },
+      {
+        name: "Turner &\nTownsend", x: 0.85, y: 0.87, r: 11, color: "#EF4444", type: "pm",
+        desc: "500+ DC projects in 35+ countries. Proprietary DCCI cost benchmark. Full lifecycle owner's rep at du/UAE. No named Nordic DC engagement found.",
+        typology: "Typology E — EPCM Governance Hub"
+      },
+      {
+        name: "AECOM", x: 0.83, y: 0.80, r: 10, color: "#EF4444", type: "pm",
+        desc: "'Technical, financial and regulatory risk allocated across parties over the full life of the asset.' Project Frog Rapid Deployment Team alliance. Nostrum DC Spain (€1.9B, 500MW).",
+        typology: "Typology C + E — Tech Alliance + EPCM"
+      },
+      {
+        name: "Bechtel", x: 0.84, y: 0.72, r: 10, color: "#3B82F6", type: "gc-us",
+        desc: "NVIDIA 'AI Factory' alliance — most significant named GC-tech partnership found. 'First revenue token' as IRR-aligned milestone metric. Also: Nautilus water-cooling tech alliance (70% less cooling power).",
+        typology: "Typology C — Technology-Standard Alliance"
+      },
+      {
+        name: "Turner\nConstruction", x: 0.80, y: 0.50, r: 12, color: "#3B82F6", type: "gc-us",
+        desc: "$29.2B total revenue 2025 (+40% YoY); $6.4B DC revenue first 9 months 2025. $39B backlog, ~37% DC-related. Meta Indiana, Vantage Ohio, CoreWeave PA. No formal named alliance.",
+        typology: "Typology A + B — Repeat-Client + Consortium JV"
+      },
+      {
+        name: "DPR", x: 0.67, y: 0.46, r: 9, color: "#3B82F6", type: "gc-us",
+        desc: "Self-perform model (largest self-perform DC contractor). 'Single integrated schedule tying together owner, vendors, GC, trades, commissioning.' Meta Fort Worth, Richland Parish, Abilene. ENR Top 5 since 2016.",
+        typology: "Typology A + B — Repeat-Client + Consortium JV"
+      },
+      {
+        name: "Hochtief\n(YEXIO)", x: 0.60, y: 0.72, r: 10, color: "#8B5CF6", type: "gc-eu",
+        desc: "Only European GC to co-own DC assets (Palladio Partners JV), operate branded DC product (YEXIO, 15 sites by 2025), and integrate cloud operations (Yorizon/Thomas-Krenn). EUR 6.2B DC backlog, nearly doubled YoY.",
+        typology: "Typology C + D — Tech Alliance + Investor-GC Op"
+      },
+      {
+        name: "VINCI\nEnergies", x: 0.60, y: 0.38, r: 9, color: "#8B5CF6", type: "gc-eu",
+        desc: "Multi-brand stack: Axians (ICT/DC networks), Cegelec/Building Solutions (design+build), VINCI Facilities (maintenance). 'Pole position in data centers.' AWS via Wah Loon subsidiary (geography unspecified).",
+        typology: "Typology A — Repeat-Client Framework"
+      },
+      {
+        name: "Bouygues\nE&S", x: 0.54, y: 0.35, r: 8, color: "#8B5CF6", type: "gc-eu",
+        desc: "Bouygues Energies & Services: project and programme management, design, build, IST, maintenance. Global Switch Clichy France (16,400m², 2011); unnamed UK 28MW. No named hyperscaler alliance.",
+        typology: "Typology A — Repeat-Client Framework"
+      },
+      {
+        name: "Holder", x: 0.50, y: 0.30, r: 8, color: "#3B82F6", type: "gc-us",
+        desc: "250+ DC projects in 10 years. EdgeCore Mesa Arizona ($1.9B, 450MW, 3.1M sqft, water-neutral). No named hyperscaler clients or alliances found.",
+        typology: "Typology A — Repeat-Client Framework"
+      },
+      {
+        name: "Skanska\nNorway/UK", x: 0.22, y: 0.44, r: 9, color: "#64748b", type: "skanska",
+        desc: "NOK 1.7B Google/WS Computing Skien (Norway, performance contract JV). Equinix + VIRTUS (UK). SAT unit 285+ professionals as 'single point of contact'. No formal named alliance. Strong Nordic GC, not PM/governance firm.",
+        typology: "Typology A — Repeat-Client Framework"
+      },
+      {
+        name: "⭐ Metier\nTarget", x: 0.17, y: 0.86, r: 13, color: "#F59E0B", type: "target",
+        desc: "TARGET WHITESPACE. No competitor identified in this quadrant. Nordic market growing at 23.5% CAGR ($2.21B→$7.83B by 2030). Recommendation: Nordic Programme Governance + Investor Reporting for PE-backed DC operators. No T&T, Jacobs, or AECOM DC engagement found in Norway.",
+        typology: "Target: Typology E — EPCM Governance Hub (Nordic)"
+      }
+    ];
+
+    // SVG dimensions
+    const W = 860, H = 640;
+    const ml = 80, mr = 30, mt = 50, mb = 70;
+    const cw = W - ml - mr, ch = H - mt - mb;
+
+    function toSvgX(dx) { return ml + dx * cw; }
+    function toSvgY(dy) { return mt + (1 - dy) * ch; } // flip Y
+
+    const svg = document.getElementById('svg');
+    svg.setAttribute('width', W);
+    svg.setAttribute('height', H);
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+    const tip = document.getElementById('tooltip');
+    function showTip(e, html) { tip.innerHTML = html; tip.style.opacity = '1'; posTip(e); }
+    function posTip(e) {
+      let x = e.clientX + 16, y = e.clientY - 12;
+      if (x + 330 > window.innerWidth) x = e.clientX - 340;
+      if (y + 140 > window.innerHeight) y = e.clientY - 150;
+      tip.style.left = x + 'px'; tip.style.top = y + 'px';
+    }
+    function hideTip() { tip.style.opacity = '0'; }
+
+    function ns(tag, attrs) {
+      const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+      for (const [k, v] of Object.entries(attrs || {})) e.setAttribute(k, v);
+      return e;
+    }
+    function svgText(text, x, y, opts = {}) {
+      const lines = text.split('\n');
+      const g = ns('g');
+      lines.forEach((line, i) => {
+        const t = ns('text', {
+          x, y: y + (i - (lines.length - 1) / 2) * (opts.lh || 13),
+          'text-anchor': opts.anchor || 'middle', 'dominant-baseline': 'central',
+          'font-size': opts.size || 11, 'font-weight': opts.weight || 'normal',
+          fill: opts.fill || '#1a202c',
+          'font-family': "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+          'pointer-events': 'none'
+        });
+        t.textContent = line;
+        g.appendChild(t);
+      });
+      svg.appendChild(g);
+    }
+
+    // Quadrant backgrounds
+    const quads = [
+      { x: 0.5, y: 0.5, w: 0.5, h: 0.5, fill: '#FEF9C3', label: "Global Investor-Grade\n(Current Leaders)", lx: 0.75, ly: 0.92 },
+      { x: 0,   y: 0.5, w: 0.5, h: 0.5, fill: '#D1FAE5', label: "Nordic Investor-Grade\n★ METIER WHITESPACE", lx: 0.25, ly: 0.92 },
+      { x: 0,   y: 0,   w: 0.5, h: 0.5, fill: '#F1F5F9', label: "Nordic Basic\n(Local PM/contractors)", lx: 0.25, ly: 0.07 },
+      { x: 0.5, y: 0,   w: 0.5, h: 0.5, fill: '#FEF2F2', label: "Global Volume GCs\n(construction-led)", lx: 0.75, ly: 0.07 }
+    ];
+
+    quads.forEach(q => {
+      svg.appendChild(ns('rect', {
+        x: toSvgX(q.x), y: toSvgY(q.y + q.h),
+        width: q.w * cw, height: q.h * ch,
+        fill: q.fill
+      }));
+      svgText(q.label, toSvgX(q.lx), toSvgY(q.ly), { fill: '#94a3b8', size: 10, weight: '600', lh: 14 });
+    });
+
+    // Axes
+    // Midlines
+    svg.appendChild(ns('line', { x1: toSvgX(0.5), y1: mt, x2: toSvgX(0.5), y2: mt + ch, stroke: '#cbd5e1', 'stroke-width': '1', 'stroke-dasharray': '4 3' }));
+    svg.appendChild(ns('line', { x1: ml, y1: toSvgY(0.5), x2: ml + cw, y2: toSvgY(0.5), stroke: '#cbd5e1', 'stroke-width': '1', 'stroke-dasharray': '4 3' }));
+    // Borders
+    svg.appendChild(ns('rect', { x: ml, y: mt, width: cw, height: ch, fill: 'none', stroke: '#e2e8f0', 'stroke-width': '1' }));
+
+    // X axis label
+    svgText('← Nordic / Local Focus', ml + cw * 0.18, H - 18, { fill: '#475569', size: 11, weight: '500' });
+    svgText('Global Scope →', ml + cw * 0.75, H - 18, { fill: '#475569', size: 11, weight: '500' });
+    svgText('Geographic Scope', ml + cw / 2, H - 6, { fill: '#94a3b8', size: 9 });
+
+    // Y axis label (rotated)
+    const yLabel = ns('text', {
+      x: 16, y: mt + ch / 2,
+      'text-anchor': 'middle', 'dominant-baseline': 'central',
+      'font-size': 10, fill: '#94a3b8',
+      'font-family': "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      transform: `rotate(-90, 16, ${mt + ch / 2})`
+    });
+    yLabel.textContent = 'Governance Sophistication';
+    svg.appendChild(yLabel);
+
+    // Axis end labels
+    svgText('Investor-Grade', ml - 6, mt + 8, { fill: '#475569', size: 10, anchor: 'end', weight: '500' });
+    svgText('Basic CM', ml - 6, mt + ch - 8, { fill: '#475569', size: 10, anchor: 'end', weight: '500' });
+
+    // Firm dots
+    firms.forEach(f => {
+      const cx = toSvgX(f.x);
+      const cy = toSvgY(f.y);
+      const isTarget = f.type === 'target';
+      const g = ns('g', { cursor: 'pointer' });
+
+      if (isTarget) {
+        // Star shape for Metier target
+        const starPts = [];
+        for (let i = 0; i < 10; i++) {
+          const angle = (i * Math.PI / 5) - Math.PI / 2;
+          const r = i % 2 === 0 ? f.r + 2 : f.r * 0.4;
+          starPts.push(`${cx + r * Math.cos(angle)},${cy + r * Math.sin(angle)}`);
+        }
+        g.appendChild(ns('polygon', {
+          points: starPts.join(' '),
+          fill: '#F59E0B', stroke: '#92400e', 'stroke-width': '1.5'
+        }));
+      } else {
+        g.appendChild(ns('circle', {
+          cx, cy, r: f.r,
+          fill: f.color, stroke: 'white', 'stroke-width': '2',
+          opacity: '0.92'
+        }));
+      }
+
+      g.addEventListener('mouseenter', e => showTip(e,
+        `<strong>${f.name.replace('\n', ' ')}</strong><br><em style="color:#94a3b8;font-size:0.75rem">${f.typology}</em><br><br>${f.desc}`
+      ));
+      g.addEventListener('mousemove', posTip);
+      g.addEventListener('mouseleave', hideTip);
+      svg.appendChild(g);
+
+      // Name label — position to avoid overlap
+      const labelOff = isTarget ? [0, f.r + 10] : [f.r + 5, -4];
+      const lines = f.name.split('\n');
+      lines.forEach((line, i) => {
+        const t = ns('text', {
+          x: cx + labelOff[0],
+          y: cy + labelOff[1] + i * 12,
+          'text-anchor': labelOff[0] > 0 ? 'start' : 'middle',
+          'dominant-baseline': 'central',
+          'font-size': isTarget ? 11 : 10,
+          'font-weight': isTarget ? '700' : '600',
+          fill: isTarget ? '#92400e' : '#1e293b',
+          'font-family': "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+          'pointer-events': 'none'
+        });
+        t.textContent = line;
+        svg.appendChild(t);
+      });
+    });
+
+    // Title
+    svgText('Competitive Positioning: DC Programme Governance', ml + cw / 2, mt - 20, { fill: '#374151', size: 13, weight: '700' });
+  </script>
+</body>
+</html>
