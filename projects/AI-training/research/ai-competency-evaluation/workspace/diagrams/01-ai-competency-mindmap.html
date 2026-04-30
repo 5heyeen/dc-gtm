@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Competency Framework — Six Dimensions</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f6fa; }
+header { text-align: center; padding: 18px 12px 6px; }
+header h1 { font-size: 1.25rem; color: #1a1a2e; }
+header p { font-size: 0.82rem; color: #666; margin-top: 4px; }
+#wrap { position: relative; width: 100%; height: 600px; }
+svg { width: 100%; height: 100%; }
+#tip {
+  position: fixed; background: #1a1a2e; color: #f5f5f5;
+  padding: 10px 14px; border-radius: 8px; font-size: 0.8rem;
+  max-width: 270px; pointer-events: none; opacity: 0;
+  transition: opacity 0.18s; z-index: 99; line-height: 1.55;
+}
+#tip .tip-head { font-weight: 700; margin-bottom: 4px; font-size: 0.85rem; }
+#legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 18px; padding: 10px 16px 18px; }
+.li { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: #333; }
+.ld { width: 13px; height: 13px; border-radius: 50%; }
+</style>
+</head>
+<body>
+<header>
+  <h1>AI Competency Framework — Six Dimensions × Four Levels</h1>
+  <p>Hover over nodes for details &nbsp;·&nbsp; Click a dimension to expand / collapse its levels</p>
+</header>
+<div id="wrap"><svg id="svg"></svg></div>
+<div id="legend"></div>
+<div id="tip"><div class="tip-head" id="tip-h"></div><div id="tip-b"></div></div>
+
+<script>
+const DIMS = [
+  { label: 'Conceptual\nUnderstanding', color: '#e63946',
+    levels: [
+      { l: 'Beginner',      d: 'Define AI, ML, LLMs. Identify AI vs non-AI tools. Recognise "hallucination" as a term.' },
+      { l: 'Intermediate',  d: 'Explain how LLMs work. Describe limits of training data. Distinguish ML types.' },
+      { l: 'Advanced',      d: 'Evaluate AI architectures. Compare LLM families. Assess model selection trade-offs.' },
+      { l: 'Expert',        d: 'Design AI systems. Govern deployment. Define organisational AI strategy.' }
+    ]},
+  { label: 'Prompt\nLiteracy', color: '#457b9d',
+    levels: [
+      { l: 'Beginner',      d: 'Write basic instructions. Use zero-shot prompts. Reformulate vague requests.' },
+      { l: 'Intermediate',  d: 'Apply few-shot examples. Use Chain-of-Thought. Inject relevant context.' },
+      { l: 'Advanced',      d: 'Use ReAct patterns. Design meta-prompts. Orchestrate multi-step prompt chains.' },
+      { l: 'Expert',        d: 'Design prompt frameworks. Evaluate prompt pipelines. Train teams on advanced techniques.' }
+    ]},
+  { label: 'Critical\nEvaluation', color: '#2a9d8f',
+    levels: [
+      { l: 'Beginner',      d: 'Spot obviously wrong outputs. Check AI answers against known facts.' },
+      { l: 'Intermediate',  d: 'Detect hallucinations in text. Identify bias signals. Verify claims against sources.' },
+      { l: 'Advanced',      d: 'Design AI output verification workflows. Build evaluation rubrics. Audit for systematic bias.' },
+      { l: 'Expert',        d: 'Develop organisation-level evaluation frameworks. Define quality metrics at scale.' }
+    ]},
+  { label: 'Ethics &\nResponsibility', color: '#e9a42a',
+    levels: [
+      { l: 'Beginner',      d: 'Identify GDPR risks in AI use. Recognise copyright concerns. Avoid sharing PII with AI tools.' },
+      { l: 'Intermediate',  d: 'Apply data protection rules. Assess AI output for bias. Explain EU AI Act scope.' },
+      { l: 'Advanced',      d: 'Design AI ethics policies. Conduct fairness audits. Apply Article 4 compliance framing.' },
+      { l: 'Expert',        d: 'Lead AI governance strategy. Design ethics review boards. Shape regulatory policy.' }
+    ]},
+  { label: 'Workflow\nIntegration', color: '#f4a261',
+    levels: [
+      { l: 'Beginner',      d: 'Use AI tools in daily work. Identify tasks AI can assist. Evaluate basic tool fit.' },
+      { l: 'Intermediate',  d: 'Integrate AI into team workflows. Map AI touchpoints. Measure time savings.' },
+      { l: 'Advanced',      d: 'Evaluate automation ROI. Design human-AI handoff processes. Scale AI use cases.' },
+      { l: 'Expert',        d: 'Define AI operating models. Redesign processes around AI capabilities at enterprise scale.' }
+    ]},
+  { label: 'Agentic AI &\nOrchestration', color: '#9b5de5',
+    levels: [
+      { l: 'Beginner',      d: 'Use pre-built AI agents (GPTs, Copilot). Understand what agents can and cannot do safely.' },
+      { l: 'Intermediate',  d: 'Build single agents with LangChain. Design tool calls. Add memory/state tracking.' },
+      { l: 'Advanced',      d: 'Design multi-agent architectures. Handle failure recovery. Implement inter-agent governance.' },
+      { l: 'Expert',        d: 'Architect enterprise agent systems. Define agent safety protocols. Lead large agent deployments.' }
+    ]}
+];
+
+const LV_COLORS = ['#a8dadc', '#457b9d', '#1d3557', '#6c757d'];
+const LV_TEXT   = ['#1a1a2e', '#fff',    '#fff',    '#fff'];
+
+const expanded = DIMS.map(() => true);
+const svg = document.getElementById('svg');
+const tip = document.getElementById('tip');
+const tipH = document.getElementById('tip-h');
+const tipB = document.getElementById('tip-b');
+
+function pt(angle, r, cx, cy) {
+  return [cx + r * Math.cos(angle), cy + r * Math.sin(angle)];
+}
+
+function el(tag, attrs) {
+  const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+  return e;
+}
+
+function txt(svgEl, x, y, lines, size, weight, fill, anchor) {
+  lines.forEach((ln, i) => {
+    const t = el('text', { x, y: y + (i - (lines.length - 1) / 2) * (size * 1.3),
+      'text-anchor': anchor || 'middle', fill, 'font-size': size, 'font-weight': weight,
+      'pointer-events': 'none' });
+    t.textContent = ln;
+    svgEl.appendChild(t);
+  });
+}
+
+function draw() {
+  svg.innerHTML = '';
+  const W = svg.clientWidth || 900;
+  const H = 600;
+  const cx = W / 2, cy = H / 2;
+  const R1 = Math.min(110, W * 0.14);
+  const R2 = Math.min(200, W * 0.26);
+
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+  // Links layer
+  const links = el('g', {});
+  svg.appendChild(links);
+  const nodes = el('g', {});
+  svg.appendChild(nodes);
+
+  DIMS.forEach((dim, i) => {
+    const angle = (i / DIMS.length) * 2 * Math.PI - Math.PI / 2;
+    const [dx, dy] = pt(angle, R1, cx, cy);
+
+    // Root → dim link
+    const l0 = el('line', { x1: cx, y1: cy, x2: dx, y2: dy,
+      stroke: dim.color, 'stroke-width': 2, 'stroke-opacity': 0.55 });
+    links.appendChild(l0);
+
+    if (expanded[i]) {
+      dim.levels.forEach((lv, li) => {
+        const la = angle + (li - 1.5) * 0.26;
+        const [lx, ly] = pt(la, R2, cx, cy);
+        const ll = el('line', { x1: dx, y1: dy, x2: lx, y2: ly,
+          stroke: dim.color, 'stroke-width': 1.5, 'stroke-opacity': 0.3 });
+        links.appendChild(ll);
+      });
+    }
+
+    // Dim node
+    const dg = el('g', { cursor: 'pointer' });
+    const dc = el('circle', { cx: dx, cy: dy, r: 27, fill: dim.color, stroke: '#fff', 'stroke-width': 2 });
+    dg.appendChild(dc);
+    txt(dg, dx, dy, dim.label.split('\n'), 9, '700', '#fff', 'middle');
+    dg.addEventListener('click', () => { expanded[i] = !expanded[i]; draw(); });
+    dg.addEventListener('mouseenter', e => show(e, dim.label.replace('\n',' '), '4 levels · click to expand/collapse'));
+    dg.addEventListener('mouseleave', hide);
+    nodes.appendChild(dg);
+
+    if (expanded[i]) {
+      dim.levels.forEach((lv, li) => {
+        const la = angle + (li - 1.5) * 0.26;
+        const [lx, ly] = pt(la, R2, cx, cy);
+
+        const lg = el('g', { cursor: 'default' });
+        const lc = el('circle', { cx: lx, cy: ly, r: 18,
+          fill: LV_COLORS[li], stroke: dim.color, 'stroke-width': 2 });
+        lg.appendChild(lc);
+        txt(lg, lx, ly, [lv.l.substring(0, 5)], 8, '600', LV_TEXT[li], 'middle');
+        lg.addEventListener('mouseenter', e => show(e, lv.l + ' — ' + dim.label.replace('\n',' '), lv.d));
+        lg.addEventListener('mouseleave', hide);
+        nodes.appendChild(lg);
+      });
+    }
+  });
+
+  // Root node (draw last so it's on top)
+  const rg = el('g', {});
+  rg.appendChild(el('circle', { cx, cy, r: 38, fill: '#1a1a2e', stroke: '#fff', 'stroke-width': 2.5 }));
+  txt(rg, cx, cy, ['AI', 'Competency'], 10, '700', '#fff', 'middle');
+  svg.appendChild(rg);
+}
+
+function show(e, head, body) {
+  tipH.textContent = head;
+  tipB.textContent = body;
+  tip.style.opacity = '1';
+  move(e);
+}
+function hide() { tip.style.opacity = '0'; }
+function move(e) {
+  tip.style.left = (e.clientX + 14) + 'px';
+  tip.style.top  = Math.min(e.clientY - 10, window.innerHeight - 160) + 'px';
+}
+document.addEventListener('mousemove', e => { if (tip.style.opacity === '1') move(e); });
+
+// Legend
+const legend = document.getElementById('legend');
+DIMS.forEach(d => {
+  const item = document.createElement('div'); item.className = 'li';
+  const dot = document.createElement('div'); dot.className = 'ld'; dot.style.background = d.color;
+  const lbl = document.createElement('span'); lbl.textContent = d.label.replace('\n',' ');
+  item.appendChild(dot); item.appendChild(lbl); legend.appendChild(item);
+});
+const lvLegend = document.createElement('div');
+lvLegend.style.cssText = 'width:100%;text-align:center;font-size:0.75rem;color:#888;margin-top:4px;';
+lvLegend.textContent = 'Level rings — Beg (light blue) · Int (mid blue) · Adv (dark blue) · Expert (grey)';
+legend.appendChild(lvLegend);
+
+draw();
+window.addEventListener('resize', draw);
+</script>
+</body>
+</html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ACA Two-Stage Adaptive Test Flow</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f6fa; }
+header { text-align: center; padding: 18px 12px 6px; }
+header h1 { font-size: 1.25rem; color: #1a1a2e; }
+header p { font-size: 0.82rem; color: #666; margin-top: 4px; }
+#wrap { width: 100%; padding: 10px 24px 0; }
+svg { width: 100%; display: block; }
+#tip {
+  position: fixed; background: #1a1a2e; color: #f5f5f5;
+  padding: 10px 14px; border-radius: 8px; font-size: 0.8rem;
+  max-width: 280px; pointer-events: none; opacity: 0;
+  transition: opacity 0.18s; z-index: 99; line-height: 1.55;
+}
+#tip .th { font-weight: 700; margin-bottom: 3px; font-size: 0.86rem; }
+#legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 22px; padding: 10px 16px 18px; }
+.li { display: flex; align-items: center; gap: 7px; font-size: 0.78rem; color: #333; }
+.ls { width: 24px; height: 13px; border-radius: 3px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>AI Competency Assessment — Two-Stage Adaptive Test Flow</h1>
+  <p>Hover over any step for details &nbsp;·&nbsp; All 24 items scored; Stage 1 determines routing</p>
+</header>
+<div id="wrap"><svg id="svg"></svg></div>
+<div id="legend"></div>
+<div id="tip"><div class="th" id="th"></div><div id="tb"></div></div>
+
+<script>
+const NODES = [
+  { id: 'all',    label: ['All Participants', 'Stage 1: 12 Intermediate Items', '20 minutes'],
+    x: 0.5,  y: 0.05, w: 0.28, h: 0.11, type: 'stage1',
+    detail: 'All participants start here. 12 scenario-based MCQs targeting the Apply/Analyse levels of Bloom\'s taxonomy. Covers all 6 competency dimensions (2 items each). 20-minute time limit enforced.' },
+  { id: 'dec',   label: ['Stage 1 Score ≥ 9 / 18?'],
+    x: 0.5,  y: 0.26, w: 0.22, h: 0.09, type: 'decision',
+    detail: 'Cut score = 9/18 (50%). Participants scoring 9+ route to Stage 2A (Advanced items). Participants scoring below 9 route to Stage 2B (Beginner items). Cut score will be refined using Angoff method after pilot.' },
+  { id: 's2a',   label: ['Stage 2A', '6 Advanced Items', '5 minutes'],
+    x: 0.77, y: 0.45, w: 0.20, h: 0.11, type: 'stage2a',
+    detail: 'Advanced-route participants (Stage 1 score ≥ 9). 6 items at Evaluate level (Bloom\'s). Covers Workflow Integration, Agentic AI/Orchestration, and advanced dimensions. Tests trade-off reasoning, system design decisions, and evaluation competency.' },
+  { id: 's2b',   label: ['Stage 2B', '6 Beginner Items', '5 minutes'],
+    x: 0.23, y: 0.45, w: 0.20, h: 0.11, type: 'stage2b',
+    detail: 'Foundational-route participants (Stage 1 score < 9). 6 items at Remember/Understand level (Bloom\'s). Establishes baseline competency across Conceptual Understanding, Ethics, and Prompt Literacy. Ensures reliable differentiation within the Beginner range.' },
+  { id: 'score', label: ['Bloom\'s-Weighted Scoring', '24 items scored', '6-Dimension Radar Chart'],
+    x: 0.5,  y: 0.63, w: 0.28, h: 0.11, type: 'scoring',
+    detail: 'All 24 items (Stage 1 + Stage 2) are scored. Bloom\'s weighting: Beginner items ×1, Intermediate items ×2, Advanced items ×3. Per-dimension sub-scores computed for radar chart output. Pre-launch: classical scoring. Post n≥300: IRT 3PL theta calibration.' },
+  { id: 'level', label: ['Level Assignment', 'Beginner / Intermediate / Advanced'],
+    x: 0.5,  y: 0.80, w: 0.26, h: 0.09, type: 'output',
+    detail: 'Overall level assigned based on total weighted score. Provisional cut scores set using modified Angoff procedure. 75% correct-classification gate before launch (requires n≥30 verified-level subsample). IRT migration trigger at n≥300 responses.' },
+  { id: 'rec',   label: ['Learning Path', 'Recommendations'],
+    x: 0.25, y: 0.94, w: 0.22, h: 0.08, type: 'output',
+    detail: 'Dimension-specific learning path based on radar chart profile. Identifies weakest dimensions. Recommends resources aligned to next proficiency level. Enables targeted upskilling rather than generic AI training.' },
+  { id: 'comp',  label: ['Compliance Record', 'EU AI Act Article 4'],
+    x: 0.75, y: 0.94, w: 0.22, h: 0.08, type: 'output',
+    detail: 'Exportable baseline assessment record for EU AI Act Article 4 compliance documentation. Org-level cohort report for L&D managers (CSV/dashboard). Timestamps enable pre/post comparison to demonstrate training effectiveness to regulators.' }
+];
+
+const COLORS = {
+  stage1:   { fill: '#1d3557', stroke: '#1d3557', text: '#fff' },
+  decision: { fill: '#e9a42a', stroke: '#d4900a', text: '#1a1a2e' },
+  stage2a:  { fill: '#2a9d8f', stroke: '#1e7268', text: '#fff' },
+  stage2b:  { fill: '#457b9d', stroke: '#2f5a72', text: '#fff' },
+  scoring:  { fill: '#9b5de5', stroke: '#7a3fbf', text: '#fff' },
+  output:   { fill: '#f5f5f5', stroke: '#aaa',    text: '#1a1a2e' }
+};
+
+const EDGES = [
+  { from: 'all',  to: 'dec',   label: '',        side: 'center' },
+  { from: 'dec',  to: 's2a',   label: 'Yes ≥ 9', side: 'right'  },
+  { from: 'dec',  to: 's2b',   label: 'No < 9',  side: 'left'   },
+  { from: 's2a',  to: 'score', label: '',        side: 'center' },
+  { from: 's2b',  to: 'score', label: '',        side: 'center' },
+  { from: 'score','to': 'level',label: '',       side: 'center' },
+  { from: 'level','to': 'rec', label: '',        side: 'left'   },
+  { from: 'level','to': 'comp',label: '',        side: 'right'  }
+];
+
+const svg = document.getElementById('svg');
+const tip = document.getElementById('tip');
+
+function draw() {
+  svg.innerHTML = '';
+  const W = svg.parentElement.clientWidth - 48;
+  const H = Math.max(560, W * 0.9);
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.setAttribute('height', H);
+
+  // Arrow marker
+  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+  marker.setAttribute('id', 'arr');
+  marker.setAttribute('markerWidth', '8'); marker.setAttribute('markerHeight', '8');
+  marker.setAttribute('refX', '6'); marker.setAttribute('refY', '3');
+  marker.setAttribute('orient', 'auto');
+  const mpoly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+  mpoly.setAttribute('points', '0 0, 6 3, 0 6');
+  mpoly.setAttribute('fill', '#888');
+  marker.appendChild(mpoly);
+  defs.appendChild(marker);
+  svg.appendChild(defs);
+
+  function el(tag, attrs) {
+    const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+    return e;
+  }
+
+  function nodeRect(n) {
+    return {
+      x: n.x * W - (n.w * W) / 2,
+      y: n.y * H - (n.h * H) / 2,
+      w: n.w * W,
+      h: n.h * H,
+      cx: n.x * W,
+      cy: n.y * H
+    };
+  }
+
+  // Edges
+  EDGES.forEach(edge => {
+    const from = NODES.find(n => n.id === edge.from);
+    const to   = NODES.find(n => n.id === edge.to);
+    const fr = nodeRect(from);
+    const tr = nodeRect(to);
+
+    let x1 = fr.cx, y1 = fr.y + fr.h;
+    let x2 = tr.cx, y2 = tr.y;
+
+    if (edge.side === 'right') {
+      x1 = fr.x + fr.w; y1 = fr.cy;
+      x2 = tr.cx; y2 = tr.y;
+    } else if (edge.side === 'left') {
+      x1 = fr.x; y1 = fr.cy;
+      x2 = tr.cx; y2 = tr.y;
+    }
+
+    const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+    const path = el('path', {
+      d: `M ${x1} ${y1} C ${x1} ${my}, ${x2} ${my}, ${x2} ${y2}`,
+      fill: 'none', stroke: '#aaa', 'stroke-width': 2,
+      'marker-end': 'url(#arr)'
+    });
+    svg.appendChild(path);
+
+    if (edge.label) {
+      const bg = el('rect', { x: mx - 20, y: my - 9, width: 40, height: 16, fill: '#f5f6fa', rx: 3 });
+      svg.appendChild(bg);
+      const t = el('text', { x: mx, y: my + 4, 'text-anchor': 'middle',
+        fill: '#555', 'font-size': 9.5, 'font-weight': '600' });
+      t.textContent = edge.label;
+      svg.appendChild(t);
+    }
+  });
+
+  // Nodes
+  NODES.forEach(n => {
+    const r = nodeRect(n);
+    const c = COLORS[n.type];
+    const isDiamond = n.type === 'decision';
+
+    const g = el('g', { cursor: 'pointer' });
+
+    if (isDiamond) {
+      const hw = r.w / 2, hh = r.h / 2;
+      const points = `${r.cx},${r.y} ${r.cx + hw},${r.cy} ${r.cx},${r.y + r.h} ${r.cx - hw},${r.cy}`;
+      g.appendChild(el('polygon', { points, fill: c.fill, stroke: c.stroke, 'stroke-width': 2 }));
+    } else {
+      g.appendChild(el('rect', { x: r.x, y: r.y, width: r.w, height: r.h,
+        fill: c.fill, stroke: c.stroke, 'stroke-width': 2, rx: 6 }));
+    }
+
+    const lines = n.label;
+    lines.forEach((ln, li) => {
+      const isFirst = li === 0;
+      const t = el('text', {
+        x: r.cx,
+        y: r.cy + (li - (lines.length - 1) / 2) * (isFirst ? 13 : 12),
+        'text-anchor': 'middle', fill: c.text,
+        'font-size': isFirst ? 10.5 : 9.5,
+        'font-weight': isFirst ? '700' : '400',
+        'pointer-events': 'none'
+      });
+      t.textContent = ln;
+      g.appendChild(t);
+    });
+
+    g.addEventListener('mouseenter', ev => {
+      document.getElementById('th').textContent = n.label[0];
+      document.getElementById('tb').textContent = n.detail;
+      tip.style.opacity = '1';
+      moveTip(ev);
+    });
+    g.addEventListener('mouseleave', () => { tip.style.opacity = '0'; });
+    svg.appendChild(g);
+  });
+}
+
+function moveTip(e) {
+  tip.style.left = (e.clientX + 14) + 'px';
+  tip.style.top  = Math.min(e.clientY - 10, window.innerHeight - 200) + 'px';
+}
+document.addEventListener('mousemove', e => { if (tip.style.opacity === '1') moveTip(e); });
+
+// Legend
+const LEGEND_ITEMS = [
+  { color: '#1d3557', label: 'Stage 1 (Intermediate items)' },
+  { color: '#e9a42a', label: 'Routing decision (cut score 9/18)' },
+  { color: '#2a9d8f', label: 'Stage 2A — Advanced route (≥9)' },
+  { color: '#457b9d', label: 'Stage 2B — Foundational route (<9)' },
+  { color: '#9b5de5', label: 'Scoring & radar chart' },
+  { color: '#ddd',   label: 'Output / compliance record', border: '#aaa' }
+];
+const legend = document.getElementById('legend');
+LEGEND_ITEMS.forEach(item => {
+  const div = document.createElement('div'); div.className = 'li';
+  const sq = document.createElement('div'); sq.className = 'ls';
+  sq.style.background = item.color;
+  if (item.border) sq.style.border = '1px solid ' + item.border;
+  const lbl = document.createElement('span'); lbl.textContent = item.label;
+  div.appendChild(sq); div.appendChild(lbl); legend.appendChild(div);
+});
+
+draw();
+window.addEventListener('resize', draw);
+</script>
+</body>
+</html>
