@@ -18,7 +18,7 @@
 - [x] Task 03: Assessment Design Principles (3 prompts, research.md saved)
 - [x] Task 04: Existing Testing Platforms (2 prompts, research.md saved)
 - [x] Task 05: Advanced Technical Tier Assessment (2 prompts, research.md saved)
-- [ ] Task 06: Test Architecture & Scoring Model (sequential, depends on 01–05)
+- [x] Task 06: Test Architecture & Scoring Model (2 prompts, research.md saved)
 - [ ] Stage 4: Notion save verification checkpoint
 - [ ] Stage 4: Notion save verification checkpoint
 - [ ] Stage 5: Synthesis → invoke /synthesise-research
