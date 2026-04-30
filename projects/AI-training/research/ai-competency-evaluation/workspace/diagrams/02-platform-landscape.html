@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Assessment Platform Landscape</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f6fa; }
+header { text-align: center; padding: 18px 12px 6px; }
+header h1 { font-size: 1.25rem; color: #1a1a2e; }
+header p { font-size: 0.82rem; color: #666; margin-top: 4px; }
+#wrap { width: 100%; padding: 10px 20px 0; }
+svg { width: 100%; display: block; }
+#tip {
+  position: fixed; background: #1a1a2e; color: #f5f5f5;
+  padding: 10px 14px; border-radius: 8px; font-size: 0.8rem;
+  max-width: 280px; pointer-events: none; opacity: 0;
+  transition: opacity 0.18s; z-index: 99; line-height: 1.55;
+}
+#tip .th { font-weight: 700; margin-bottom: 3px; font-size: 0.86rem; }
+#tip .tl { color: #a8dadc; font-size: 0.76rem; margin-bottom: 5px; }
+#legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 22px; padding: 10px 16px 18px; }
+.li { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: #333; }
+.ld { width: 13px; height: 13px; border-radius: 50%; }
+</style>
+</head>
+<body>
+<header>
+  <h1>AI Assessment Platform Landscape</h1>
+  <p>Technical depth vs. audience breadth &nbsp;·&nbsp; Hover over any platform for details</p>
+</header>
+<div id="wrap"><svg id="svg"></svg></div>
+<div id="legend"></div>
+<div id="tip"><div class="th" id="th"></div><div class="tl" id="tl"></div><div id="tb"></div></div>
+
+<script>
+const PLATFORMS = [
+  { name: 'HackerRank',           x: 0.87, y: 0.20, type: 'hiring',
+    tag: 'Hiring-screening tool',
+    desc: 'Prompt engineering + RAG templates (Apr 2025). Most technically advanced MCQ for AI hiring. No org-level baseline, no ethics coverage, no learning path output.' },
+  { name: 'Pluralsight Skill IQ', x: 0.58, y: 0.55, type: 'learning',
+    tag: 'L&D / skills tracking',
+    desc: 'Bayesian adaptive scoring (0–300 IQ). Good for dev/data roles. Lacks GenAI depth and ethics coverage. Percentile-relative scoring, not competency-level diagnostic.' },
+  { name: 'DataCamp',             x: 0.72, y: 0.42, type: 'learning',
+    tag: 'L&D / skills tracking',
+    desc: 'AI/ML certifications (AIEDSA101/102). Two 2-hour proctored exams. Strong data science coverage. Not designed for non-technical professionals or org cohort reporting.' },
+  { name: 'LinkedIn Learning',    x: 0.22, y: 0.78, type: 'learning',
+    tag: 'L&D / broad audience',
+    desc: 'Discontinued standalone skill assessments (2024). Broad reach. Now redirects to course recommendations. No competency placement or cohort gap reporting.' },
+  { name: 'Coursera',             x: 0.45, y: 0.82, type: 'learning',
+    tag: 'L&D / broad audience',
+    desc: 'Wide AI course catalog. Competency assessments embedded in courses, not standalone diagnostic. Google / IBM badges are vendor-specific. No org-level gap reporting.' },
+  { name: 'Microsoft Navigator',  x: 0.50, y: 0.65, type: 'vendor',
+    tag: 'Vendor-ecosystem tool',
+    desc: 'Maps employees to Microsoft AI learning paths. Ecosystem-locked (Azure / Copilot). Org-level reporting available but tied to Microsoft 365 licensing. Not vendor-neutral.' },
+  { name: 'CFTE AIQ',             x: 0.38, y: 0.32, type: 'niche',
+    tag: 'Niche / finance sector',
+    desc: 'AI Quotient score for financial services professionals. Scenario-based, multi-dimension. Narrow sector focus; not validated for tech roles or general workforces.' },
+  { name: 'TestDome / iMocha',    x: 0.65, y: 0.38, type: 'hiring',
+    tag: 'Hiring-screening tool',
+    desc: 'Generic skills testing platforms. AI modules available but not specialised. Used for pre-hire screening, not competency baseline or training diagnosis.' },
+  { name: 'ACA (Proposed)',       x: 0.65, y: 0.90, type: 'proposed',
+    tag: '★ Target position',
+    desc: 'Vendor-neutral · 6 dimensions · 4 levels · Two-stage adaptive routing · Org cohort gap report · EU AI Act Article 4 compliance documentation · Pre/post tracking.' }
+];
+
+const TYPE_COLORS = {
+  hiring:   '#e63946',
+  learning: '#457b9d',
+  vendor:   '#f4a261',
+  niche:    '#2a9d8f',
+  proposed: '#9b5de5'
+};
+const TYPE_LABELS = {
+  hiring:   'Hiring-screening',
+  learning: 'L&D / learning',
+  vendor:   'Vendor-ecosystem',
+  niche:    'Niche / sector',
+  proposed: 'ACA Proposed'
+};
+
+const svg = document.getElementById('svg');
+const tip = document.getElementById('tip');
+
+function draw() {
+  svg.innerHTML = '';
+  const W = svg.parentElement.clientWidth - 40;
+  const H = Math.max(420, W * 0.62);
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.setAttribute('height', H);
+
+  const PAD = { l: 58, r: 30, t: 20, b: 52 };
+  const IW = W - PAD.l - PAD.r;
+  const IH = H - PAD.t - PAD.b;
+
+  function px(xv) { return PAD.l + xv * IW; }
+  function py(yv) { return PAD.t + (1 - yv) * IH; }
+
+  function e(tag, attrs) {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+    return el;
+  }
+
+  // Background quadrants
+  const qs = [
+    { x: PAD.l, y: PAD.t, w: IW/2, h: IH/2, fill: '#f0f4ff', label: 'Broad + Technical\n(ideal target zone)' },
+    { x: PAD.l + IW/2, y: PAD.t, w: IW/2, h: IH/2, fill: '#fff8f0', label: '' },
+    { x: PAD.l, y: PAD.t + IH/2, w: IW/2, h: IH/2, fill: '#fff', label: '' },
+    { x: PAD.l + IW/2, y: PAD.t + IH/2, w: IW/2, h: IH/2, fill: '#fdf0f0', label: '' }
+  ];
+  qs.forEach((q, qi) => {
+    svg.appendChild(e('rect', { x: q.x, y: q.y, width: q.w, height: q.h, fill: q.fill }));
+    if (q.label) {
+      const lines = q.label.split('\n');
+      lines.forEach((ln, li) => {
+        const t = e('text', { x: q.x + 8, y: q.y + 16 + li * 14,
+          fill: '#9b5de5', 'font-size': 10, 'font-weight': '600', opacity: 0.85 });
+        t.textContent = ln;
+        svg.appendChild(t);
+      });
+    }
+  });
+
+  // Gap zone dashed border
+  const gx = px(0.5), gy = py(0.72), gw = px(1) - gx, gh = py(0.72) - PAD.t;
+  svg.appendChild(e('rect', { x: gx, y: PAD.t, width: gw, height: gh,
+    fill: 'none', stroke: '#9b5de5', 'stroke-width': 1.5, 'stroke-dasharray': '5 4', rx: 4, opacity: 0.5 }));
+  const gt = e('text', { x: gx + gw - 6, y: PAD.t + 12, 'text-anchor': 'end',
+    fill: '#9b5de5', 'font-size': 9.5, 'font-style': 'italic', opacity: 0.7 });
+  gt.textContent = 'Market gap zone';
+  svg.appendChild(gt);
+
+  // Axes
+  svg.appendChild(e('line', { x1: PAD.l, y1: PAD.t, x2: PAD.l, y2: PAD.t + IH, stroke: '#ccc', 'stroke-width': 1 }));
+  svg.appendChild(e('line', { x1: PAD.l, y1: PAD.t + IH, x2: PAD.l + IW, y2: PAD.t + IH, stroke: '#ccc', 'stroke-width': 1 }));
+  svg.appendChild(e('line', { x1: PAD.l, y1: PAD.t + IH/2, x2: PAD.l + IW, y2: PAD.t + IH/2, stroke: '#ddd', 'stroke-width': 1, 'stroke-dasharray': '4 3' }));
+  svg.appendChild(e('line', { x1: PAD.l + IW/2, y1: PAD.t, x2: PAD.l + IW/2, y2: PAD.t + IH, stroke: '#ddd', 'stroke-width': 1, 'stroke-dasharray': '4 3' }));
+
+  // Axis labels
+  const axLbl = (txt, x, y, anchor, size) => {
+    const t = e('text', { x, y, 'text-anchor': anchor || 'middle', fill: '#555', 'font-size': size || 11, 'font-weight': '600' });
+    t.textContent = txt;
+    svg.appendChild(t);
+  };
+  axLbl('Low Technical Depth', PAD.l + IW * 0.18, H - 14);
+  axLbl('High Technical Depth', PAD.l + IW * 0.82, H - 14);
+  axLbl('←', PAD.l + IW * 0.03, H - 14, 'middle', 12);
+  axLbl('→', PAD.l + IW * 0.97, H - 14, 'middle', 12);
+
+  const yLabel = e('text', { x: 14, y: PAD.t + IH / 2,
+    'text-anchor': 'middle', fill: '#555', 'font-size': 11, 'font-weight': '600',
+    transform: `rotate(-90, 14, ${PAD.t + IH / 2})` });
+  yLabel.textContent = 'Audience Breadth';
+  svg.appendChild(yLabel);
+
+  axLbl('Narrow ↓', 44, PAD.t + IH * 0.82, 'middle', 9);
+  axLbl('Broad ↑',  44, PAD.t + IH * 0.18, 'middle', 9);
+
+  // Platform nodes
+  PLATFORMS.forEach(p => {
+    const nx = px(p.x), ny = py(p.y);
+    const r = p.type === 'proposed' ? 20 : 15;
+    const color = TYPE_COLORS[p.type];
+    const g = e('g', { cursor: 'pointer' });
+
+    if (p.type === 'proposed') {
+      g.appendChild(e('circle', { cx: nx, cy: ny, r: r + 5, fill: color, opacity: 0.15 }));
+    }
+
+    const c = e('circle', { cx: nx, cy: ny, r, fill: color, stroke: '#fff', 'stroke-width': 2 });
+    g.appendChild(c);
+
+    const initials = p.name === 'ACA (Proposed)' ? '★' :
+      p.name.split(' ').slice(0, 2).map(w => w[0]).join('').substring(0,2).toUpperCase();
+    const t = e('text', { x: nx, y: ny + 4, 'text-anchor': 'middle',
+      fill: '#fff', 'font-size': p.type === 'proposed' ? 14 : 9.5, 'font-weight': '700',
+      'pointer-events': 'none' });
+    t.textContent = initials;
+    g.appendChild(t);
+
+    // Name label
+    const nl = e('text', { x: nx, y: ny + r + 12, 'text-anchor': 'middle',
+      fill: '#333', 'font-size': 9, 'pointer-events': 'none' });
+    nl.textContent = p.name.length > 16 ? p.name.substring(0,15) + '…' : p.name;
+    g.appendChild(nl);
+
+    g.addEventListener('mouseenter', ev => {
+      document.getElementById('th').textContent = p.name;
+      document.getElementById('tl').textContent = p.tag;
+      document.getElementById('tb').textContent = p.desc;
+      tip.style.opacity = '1';
+      moveTip(ev);
+    });
+    g.addEventListener('mouseleave', () => { tip.style.opacity = '0'; });
+    svg.appendChild(g);
+  });
+}
+
+function moveTip(e) {
+  tip.style.left = (e.clientX + 14) + 'px';
+  tip.style.top  = Math.min(e.clientY - 10, window.innerHeight - 180) + 'px';
+}
+document.addEventListener('mousemove', e => { if (tip.style.opacity === '1') moveTip(e); });
+
+// Legend
+const legend = document.getElementById('legend');
+Object.entries(TYPE_LABELS).forEach(([k, v]) => {
+  const item = document.createElement('div'); item.className = 'li';
+  const dot = document.createElement('div'); dot.className = 'ld'; dot.style.background = TYPE_COLORS[k];
+  const lbl = document.createElement('span'); lbl.textContent = v;
+  item.appendChild(dot); item.appendChild(lbl); legend.appendChild(item);
+});
+
+draw();
+window.addEventListener('resize', draw);
+</script>
+</body>
+</html>
