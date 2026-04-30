@@ -9,9 +9,17 @@
 ## Completed
 - [x] Stage 1: Scope resolution and workspace created
 
+## Completed (continued)
+- [x] Stage 2: Breakdown — 6 subtasks approved
+- [x] Task 01: AI Competency Dimensions & Taxonomy (10 prompts, research.md saved)
+
 ## Remaining
-- [ ] Stage 2: Breakdown (subtask list TBD — awaiting /decompose-task)
-- [ ] Stage 3: Per-subtask research (subtask list TBD)
+- [ ] Task 02: Existing Frameworks & Certifications
+- [ ] Task 03: Assessment Design Principles
+- [ ] Task 04: Existing Testing Platforms
+- [ ] Task 05: Advanced Technical Tier Assessment
+- [ ] Task 06: Test Architecture & Scoring Model (sequential, depends on 01–05)
+- [ ] Stage 4: Notion save verification checkpoint
 - [ ] Stage 4: Notion save verification checkpoint
 - [ ] Stage 5: Synthesis → invoke /synthesise-research
 - [ ] Stage 5b: Save synthesis to Notion → invoke /save-research
